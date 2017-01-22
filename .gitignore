@@ -1,0 +1,8 @@
+# Folders
+/.vs
+/Debug
+
+# Visual Studio
+*.sln
+*.vcxproj*
+*.VC.*
