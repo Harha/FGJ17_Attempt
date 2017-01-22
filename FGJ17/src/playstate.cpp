@@ -29,8 +29,8 @@ void PlayState::render(Display * const display)
 	if (m_game->getRunState() == GRS_RUNNING_DBG)
 	{
 		SDL_Color textcolor{ 255, 255, 255, 255 };
-		display->drawText(m_game->GAMEFONT, "FPS: " + std::to_string(1000.0f / m_game->getDeltaReTime()), textcolor, vec2(2, 2));
-		display->drawText(m_game->GAMEFONT, "UPS: " + std::to_string(1000.0f / m_game->getDeltaUpTime()), textcolor, vec2(2, 18));
+		display->drawText(m_game->GAMEFONT, "FPS: " + std::to_string(1000.0 / m_game->getDeltaReTime()), textcolor, vec2(2, 2));
+		display->drawText(m_game->GAMEFONT, "UPS: " + std::to_string(1000.0 / m_game->getDeltaUpTime()), textcolor, vec2(2, 18));
 		display->drawText(m_game->GAMEFONT, "Game STATE: " + std::to_string(m_game->getRunState()), textcolor, vec2(2, 34));
 		display->drawText(m_game->GAMEFONT, "Player STATE: " + std::to_string(m_level.getPlayer()->getState()), textcolor, vec2(2, 50));
 		display->drawText(m_game->GAMEFONT, "Entities: " + std::to_string(m_level.getEntityVector().size()), textcolor, vec2(2, 66));

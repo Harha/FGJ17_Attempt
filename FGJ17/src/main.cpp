@@ -40,12 +40,14 @@ int main(int argc, char *argv[])
 	LOG("Main: SDL2_mixer Initialized successfully.");
 
 	// Init display
-	Display display("#GGJ17 #FGJ17 @Harha", 640, 480, 3);
+	Display display("#GGJ17 #FGJ17 @Harha", 512, 480, 3);
 	//display.setState(SDL_WINDOW_FULLSCREEN);
 
 	// Init & run game
 	Game * game = new Game(&display);
 	return_code = game->run();
+
+	// Quit game
 	DELETE_SP(game);
 
 	// Quit SDL2, TTF, Mixer

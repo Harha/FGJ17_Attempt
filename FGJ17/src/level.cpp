@@ -43,8 +43,8 @@ Level::Level(Game * const game, const std::string & tmxFilePath) :
 			{
 				LOG("Level: Parsed entity name: " << o.name << ", type: " << o.type);
 
-				// Player spawn point
-				if (o.type == "SPWN_PLAYER")
+				// Player entity
+				if (o.type == "PLAYER")
 				{
 					m_entityVector.push_back(new Player(m_game, vec2(o.x, o.y)));
 				}

@@ -22,7 +22,7 @@ enum GameRunState
 class Game
 {
 public:
-	Game(Display * const display, double timeStep = 1e-2, uint32_t tickRate = 100, uint32_t frameRate = 60);
+	Game(Display * const display, double timeStep = 1e-2, uint32_t tickRate = 80, uint32_t frameRate = 128);
 	~Game();
 	GameRunState run();
 	void update();
