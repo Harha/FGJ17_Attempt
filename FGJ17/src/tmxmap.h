@@ -3,8 +3,6 @@
 
 #include <string>
 #include <vector>
-#include "pugixml.hpp"
-#include "pugiconfig.hpp"
 #include "tile.h"
 
 class Game;

@@ -1,0 +1,34 @@
+{
+	"game": {
+		"window": {
+			"title": "#GGJ17 #FGJ17 @Harha",
+			"width": 512,
+			"height": 480,
+			"scale": 3,
+			"fullscreen": false
+		},
+		"physics": {
+			"timeStep": 1e-2,
+			"tickRate": 80.0
+		},
+		"graphics": {
+			"frameRate": 128.0
+		},
+		"fonts": [
+			{
+				"fileName": "UpheavalPro.ttf",
+				"fontSize": 16
+			}
+		],
+		"music": [
+			"Prime & Some1 - Turtle Race!.mod",
+			"Ko0x - Caramel Condition.xm"
+		],
+		"levels": [
+			{
+				"fileName": "level_0-0.tmx",
+				"gravity": -9.81
+			}
+		]
+	}
+}

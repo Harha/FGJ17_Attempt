@@ -2,10 +2,10 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
+#include "macros.h"
 #include "display.h"
 #include "resmanager.h"
 #include "game.h"
-#include "macros.h"
 
 int main(int argc, char *argv[])
 {
@@ -39,12 +39,8 @@ int main(int argc, char *argv[])
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 	LOG("Main: SDL2_mixer Initialized successfully.");
 
-	// Init display
-	Display display("#GGJ17 #FGJ17 @Harha", 512, 480, 3);
-	//display.setState(SDL_WINDOW_FULLSCREEN);
-
 	// Init & run game
-	Game * game = new Game(&display);
+	Game * game = new Game();
 	return_code = game->run();
 
 	// Quit game

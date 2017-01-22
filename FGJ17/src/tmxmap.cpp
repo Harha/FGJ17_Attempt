@@ -1,5 +1,7 @@
 #include "tmxmap.h"
 #include <cstring>
+#include "3rdparty/pugixml.hpp"
+#include "3rdparty/pugiconfig.hpp"
 #include "game.h"
 #include "resmanager.h"
 #include "display.h"

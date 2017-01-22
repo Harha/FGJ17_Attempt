@@ -3,6 +3,9 @@
 
 #include <cstdint>
 #include <stack>
+#include "3rdparty/json.hpp"
+
+using json = nlohmann::json;
 
 class Display;
 class ResManager;
@@ -22,37 +25,55 @@ enum GameRunState
 class Game
 {
 public:
-	Game(Display * const display, double timeStep = 1e-2, uint32_t tickRate = 80, uint32_t frameRate = 128);
+	Game(const std::string & cfgFilePath = "./data/config.json");
 	~Game();
 	GameRunState run();
 	void update();
 	void render();
-	void playMusic(Mix_Music * music, int32_t loops = -1);
+	void setMusicSong(Mix_Music * music, int32_t loops = -1);
 	void setMusicVolume(int32_t volume);
-	Display * const getDisplay() const;
-	ResManager * const getResMan() const;
+
+	// Game state
+	json & getConfig();
+	GameRunState getRunState() const;
 	const uint8_t * const getInputKeys() const;
+
+	// Resources
+	ResManager * const getResMan() const;
+	std::vector<TTF_Font *> getGameFont() const;
+	std::vector<Mix_Music *> getGameMusic() const;
+
+	// Physics
 	double getCurrentTimeInMs() const;
 	double getDeltaUpTime() const;
-	double getDeltaReTime() const;
 	double getTicksInMs() const;
-	GameRunState getRunState() const;
 
-	TTF_Font * GAMEFONT;
-	Mix_Music * GAMEMUSIC;
+	// Graphics
+	Display * const getDisplay() const;
+	double getDeltaReTime() const;
 private:
-	Display * const m_display;
-	ResManager * m_resMan;
+	// Game state
+	json m_config;
+	GameRunState m_runState;
 	std::stack<GameState *> m_gameStates;
 	const uint8_t * const m_inputKeys;
+
+	// Resources
+	ResManager * m_resMan;
+	std::vector<TTF_Font *> m_gameFont;
+	std::vector<Mix_Music *> m_gameMusic;
+
+	// Physics
 	double m_startTime;
 	double m_timeStep;
 	double m_ticks;
 	double m_tickTime;
-	double m_frameTime;
 	double m_deltaUpTime;
+
+	// Graphics
+	Display * m_display;
+	double m_frameTime;
 	double m_deltaReTime;
-	GameRunState m_runState;
 };
 
 #endif // GAME_H
