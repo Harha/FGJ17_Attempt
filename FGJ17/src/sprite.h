@@ -2,9 +2,9 @@
 #define SPRITE_H
 
 #include <SDL.h>
-#include <cstdint>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include "vec2.h"
 
 class Display;

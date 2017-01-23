@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <utility>
+#include "tmxtile.h"
 #include "tile.h"
 
 class Game;
@@ -15,8 +18,8 @@ struct TmxObject
 	std::string type;
 	int32_t x;
 	int32_t y;
-	int32_t w;
-	int32_t h;
+	int32_t width;
+	int32_t height;
 };
 
 struct TmxObjectgroupData
@@ -49,6 +52,7 @@ struct TmxTilesetData
 	uint32_t height;
 	uint32_t tilewidth;
 	uint32_t tileheight;
+	std::map<int, TmxTilePropertiesData> tileproperties;
 };
 
 struct TmxMapData
@@ -60,7 +64,7 @@ struct TmxMapData
 	uint32_t height;
 	uint32_t tilewidth;
 	uint32_t tileheight;
-	std::vector<TmxTilesetData> tileset;
+	TmxTilesetData tileset;
 	std::vector<TmxLayerData> layer;
 	std::vector<TmxImgLayerData> imglayer;
 	std::vector<TmxObjectgroupData> objectgroup;

@@ -1,5 +1,4 @@
 #include "image.h"
-#include <SDL.h>
 #include "game.h"
 #include "display.h"
 #include "resmanager.h"

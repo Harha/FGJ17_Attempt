@@ -90,6 +90,7 @@ Game::Game(const std::string & cfgFilePath) :
 	m_gameStates.push(new PlayState(this, "./data/levels/level_0-0.tmx"));
 
 	// Setup some settings
+	setMusicSong(m_gameMusic[0]);
 	setMusicVolume(5);
 }
 
@@ -114,7 +115,6 @@ GameRunState Game::run()
 
 	// Initialize SDL related stuff
 	SDL_Event event;
-	setMusicSong(m_gameMusic.back());
 
 	// Physics/Timing related stuff
 	m_ticks = m_startTime = getTicksInMs();

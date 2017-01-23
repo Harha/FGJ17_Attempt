@@ -5,7 +5,12 @@
 #include "level.h"
 #include "tile.h"
 
-Entity::Entity(Game * const game, const std::string & sprite, const AABB & aabb, const vec2 & position) :
+Entity::Entity(
+	Game * const game,
+	const std::string & sprite,
+	const AABB & aabb,
+	const vec2 & position
+) :
 	m_game(game),
 	m_sprites(),
 	m_sprite(sprite),
@@ -33,7 +38,7 @@ void Entity::update(Level & lvl, double t, double dt)
 
 	// Update v & s
 	m_velocity -= m_velocity * ((m_state == ENTITY_FLYING) ? m_airFriction : m_grndFriction);
-	m_position = m_position + m_velocity * dt;
+	m_position = m_position + m_velocity * static_cast<float>(dt);
 
 	// Update AABB
 	m_aabb.setMinP(m_position);
@@ -74,9 +79,9 @@ void Entity::update(Level & lvl, double t, double dt)
 	if (lvl.getTileGrid().getNearestData(m_aabb.getCenterP(), 1, nearbyTiles))
 	{
 		AABB aabb_vx(m_aabb.getMinP(), m_aabb.getMaxP());
-		aabb_vx = aabb_vx + vec2(m_velocity.x * dt, 0.0f);
+		aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
 		AABB aabb_vy(m_aabb.getMinP(), m_aabb.getMaxP());
-		aabb_vy = aabb_vy + vec2(0.0f, m_velocity.y * dt);
+		aabb_vy = aabb_vy + vec2(0.0f, m_velocity.y * static_cast<float>(dt));
 
 		for (Tile * t : nearbyTiles)
 		{

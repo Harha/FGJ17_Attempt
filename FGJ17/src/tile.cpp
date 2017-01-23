@@ -3,13 +3,23 @@
 #include "display.h"
 
 
-Tile::Tile(Game &game, Sprite sprite, vec2 position, TileLayer layer, TileType type) :
+Tile::Tile(
+	Game & game,
+	Sprite sprite,
+	vec2 position,
+	TileLayer layer,
+	TileType type,
+	TileProperties properties
+) :
 	m_sprite(sprite),
 	m_position(position),
-	m_aabb(m_position - m_sprite.getDimensions() * 0.5f + m_sprite.getDimensions() * 0.5f,
-		m_position + m_sprite.getDimensions() * 0.5f + m_sprite.getDimensions() * 0.5f),
+	m_aabb(
+		m_position - m_sprite.getDimensions() * 0.5f + m_sprite.getDimensions() * 0.5f,
+		m_position + m_sprite.getDimensions() * 0.5f + m_sprite.getDimensions() * 0.5f
+	),
 	m_layer(layer),
-	m_type(type)
+	m_type(type),
+	m_properties(properties)
 {
 
 }
@@ -53,4 +63,9 @@ TileLayer Tile::getLayer() const
 TileType Tile::getType() const
 {
 	return m_type;
+}
+
+TileProperties Tile::getProperties() const
+{
+	return m_properties;
 }

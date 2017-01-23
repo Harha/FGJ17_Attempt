@@ -35,8 +35,16 @@ std::vector<SprAnimFrame> PLR_JMP_L_V(PLR_JMP_L, PLR_JMP_L + sizeof(PLR_JMP_L) /
 std::vector<SprAnimFrame> PLR_JMP_R_V(PLR_JMP_R, PLR_JMP_R + sizeof(PLR_JMP_R) / sizeof(PLR_JMP_R[0]));
 
 // Player class
-Player::Player(Game * const game, const vec2 & position) :
-	Entity(game, "RUN_RIGHT", AABB(vec2(), vec2()), position)
+Player::Player(
+	Game * const game,
+	const vec2 & position
+) :
+	Entity(
+		game,
+		"RUN_RIGHT",
+		AABB(vec2(), vec2()),
+		position
+	)
 {
 	m_sprites.emplace("RUN_LEFT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_RUN_L_V, true, 10));
 	m_sprites.emplace("RUN_RIGHT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_RUN_R_V, true, 10));

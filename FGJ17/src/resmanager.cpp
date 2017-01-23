@@ -10,7 +10,9 @@
 ResManager::ResManager(Game * const game) :
 	m_game(game),
 	m_surfaces(),
-	m_textures()
+	m_textures(),
+	m_fonts(),
+	m_music()
 {
 
 }

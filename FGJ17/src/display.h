@@ -21,7 +21,6 @@ public:
 		int32_t scale = 3
 	);
 	~Display();
-
 	void clear();
 	void render();
 	void drawImage(SDL_Texture * texture, SDL_Rect * sourceRect, SDL_Rect * destRect, const vec2 & destPos, bool clip = false);

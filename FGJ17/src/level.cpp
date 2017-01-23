@@ -9,7 +9,10 @@
 #include "player.h"
 #include "macros.h"
 
-Level::Level(Game * const game, const std::string & tmxFilePath) :
+Level::Level(
+	Game * const game,
+	const std::string & tmxFilePath
+) :
 	m_game(game),
 	m_tmxMap(new TmxMap(*m_game, tmxFilePath)),
 	m_tileWidth(m_tmxMap->getMapData().tilewidth),
@@ -41,12 +44,12 @@ Level::Level(Game * const game, const std::string & tmxFilePath) :
 		{
 			for (TmxObject & o : ogd.objects)
 			{
-				LOG("Level: Parsed entity name: " << o.name << ", type: " << o.type);
+				LOG_INFO("Level: Parsed entity name: %s, type: %s", o.name.c_str(), o.type.c_str());
 
 				// Player entity
 				if (o.type == "PLAYER")
 				{
-					m_entityVector.push_back(new Player(m_game, vec2(o.x, o.y)));
+					m_entityVector.push_back(new Player(m_game, vec2(static_cast<float>(o.x), static_cast<float>(o.y))));
 				}
 			}
 		}

@@ -1,8 +1,8 @@
 #include "sprite.h"
+#include "macros.h"
 #include "game.h"
 #include "display.h"
 #include "resmanager.h"
-#include "macros.h"
 
 Sprite::Sprite(SDL_Texture * sprSheet, int32_t srcX, int32_t srcY, int32_t srcW, int32_t srcH) :
 	m_sprSheet(sprSheet),
@@ -44,15 +44,19 @@ void Sprite::update(double t, double dt)
 void Sprite::render(Display * const display, vec2 position)
 {
 	SDL_Rect sourceRect = m_sprAnimFrames[m_sprAnimFrame];
-	SDL_Rect destinationRect = { static_cast<int32_t>(std::round(position.x)), static_cast<int32_t>(std::round(position.y)),
-								 sourceRect.w, sourceRect.h };
+	SDL_Rect destinationRect = {
+		static_cast<int32_t>(std::round(position.x)),
+		static_cast<int32_t>(std::round(position.y)),
+		sourceRect.w,
+		sourceRect.h
+	};
+
 	display->drawImage(m_sprSheet, &sourceRect, &destinationRect, position, true);
 }
 
 void Sprite::renderOutline(Display * const display, vec2 position)
 {
-	display->drawRectangle(position, vec2(position.x + m_sprAnimFrames[m_sprAnimFrame].w,
-		position.y + m_sprAnimFrames[m_sprAnimFrame].h));
+	display->drawRectangle(position, vec2(position.x + m_sprAnimFrames[m_sprAnimFrame].w, position.y + m_sprAnimFrames[m_sprAnimFrame].h));
 }
 
 void Sprite::setSprAnimTime(double time)

@@ -17,7 +17,10 @@ class Entity;
 class Level
 {
 public:
-	Level(Game * const game, const std::string & tmxFilePath);
+	Level(
+		Game * const game,
+		const std::string & tmxFilePath
+	);
 	~Level();
 	void update(double t, double dt);
 	void render(Display * const display);

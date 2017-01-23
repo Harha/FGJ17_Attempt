@@ -21,6 +21,7 @@ Display::Display(std::string title, int32_t width, int32_t height, int32_t scale
 		m_height,
 		SDL_WINDOW_SHOWN
 	);
+
 	m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
@@ -42,8 +43,7 @@ void Display::render()
 	SDL_RenderPresent(m_renderer);
 }
 
-void Display::drawImage(SDL_Texture * texture, SDL_Rect * sourceRect,
-	SDL_Rect * destRect, const vec2 & destPos, bool clip)
+void Display::drawImage(SDL_Texture * texture, SDL_Rect * sourceRect, SDL_Rect * destRect, const vec2 & destPos, bool clip)
 {
 	destRect->x = static_cast<int32_t>(std::round((destPos.x + m_offset.x) * m_scale));
 	destRect->y = static_cast<int32_t>(std::round((destPos.y + m_offset.y) * -m_scale));
@@ -61,8 +61,7 @@ void Display::drawImage(SDL_Texture * texture, SDL_Rect * sourceRect,
 	SDL_RenderCopy(m_renderer, texture, sourceRect, destRect);
 }
 
-void Display::drawImageRepeat(SDL_Texture * texture, SDL_Rect * sourceRect,
-	SDL_Rect * destRect, const vec2 & destPos, int32_t w, int32_t h, bool clip)
+void Display::drawImageRepeat(SDL_Texture * texture, SDL_Rect * sourceRect, SDL_Rect * destRect, const vec2 & destPos, int32_t w, int32_t h, bool clip)
 {
 	destRect->x = static_cast<int32_t>(std::round((destPos.x + m_offset.x) * m_scale));
 	destRect->y = static_cast<int32_t>(std::round((destPos.y + m_offset.y) * -m_scale));
@@ -94,8 +93,7 @@ void Display::drawImageRepeat(SDL_Texture * texture, SDL_Rect * sourceRect,
 	}
 }
 
-void Display::drawText(TTF_Font * font, const std::string & text,
-	SDL_Color color, const vec2 & destPos)
+void Display::drawText(TTF_Font * font, const std::string & text, SDL_Color color, const vec2 & destPos)
 {
 	assert(font);
 

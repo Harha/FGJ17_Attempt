@@ -1,8 +1,8 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <map>
 #include <string>
+#include <map>
 #include "sprite.h"
 #include "vec2.h"
 #include "aabb.h"
@@ -22,12 +22,12 @@ struct EntityInput
 
 	bool operator==(const EntityInput & i) const
 	{
-		if (keyUp == i.keyUp &&
-			keyDown == i.keyDown &&
-			keyLeft == i.keyLeft &&
-			keyRight == i.keyRight &&
-			keyA == i.keyA &&
-			keyB == i.keyB)
+		if (keyUp		== i.keyUp		&&
+			keyDown		== i.keyDown	&&
+			keyLeft		== i.keyLeft	&&
+			keyRight	== i.keyRight	&&
+			keyA		== i.keyA		&&
+			keyB		== i.keyB		)
 		{
 			return true;
 		}
@@ -63,7 +63,12 @@ enum EntityMoveDirY
 class Entity
 {
 public:
-	Entity(Game * const game, const std::string & sprite, const AABB & aabb, const vec2 & position);
+	Entity(
+		Game * const game,
+		const std::string & sprite,
+		const AABB & aabb,
+		const vec2 & position
+	);
 	virtual void update(Level & lvl, double t, double dt);
 	virtual void render(Display * const display);
 	virtual void renderAABB(Display * const display);
