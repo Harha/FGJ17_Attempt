@@ -8,7 +8,6 @@ Tile::Tile(
 	Sprite sprite,
 	vec2 position,
 	TileLayer layer,
-	TileType type,
 	TileProperties properties
 ) :
 	m_sprite(sprite),
@@ -18,7 +17,6 @@ Tile::Tile(
 		m_position + m_sprite.getDimensions() * 0.5f + m_sprite.getDimensions() * 0.5f
 	),
 	m_layer(layer),
-	m_type(type),
 	m_properties(properties)
 {
 
@@ -60,12 +58,23 @@ TileLayer Tile::getLayer() const
 	return m_layer;
 }
 
-TileType Tile::getType() const
-{
-	return m_type;
-}
-
 TileProperties Tile::getProperties() const
 {
 	return m_properties;
+}
+
+bool Tile::hasPropertyWithValue(TilePropertyName prop_name, TilePropertyValue prop_value) const
+{
+	for (auto & prop : m_properties)
+	{
+		if (prop.first == prop_name)
+		{
+			if (prop.second == prop_value)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }

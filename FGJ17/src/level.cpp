@@ -89,7 +89,7 @@ void Level::update(double t, double dt)
 	}
 
 	// Update camera
-	m_camera = m_player->getAABB().getCenterP();
+	m_camera = m_player->getPhysAABB().getCenterP();
 }
 
 void Level::render(Display * const display)

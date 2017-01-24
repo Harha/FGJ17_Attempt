@@ -35,12 +35,11 @@ Game::Game(const std::string & cfgFilePath) :
 	m_display(nullptr),
 	m_deltaReTime(m_frameTime),
 	m_frameTime(1000.0 / 128.0)
-
 {
 	// Load config.json file
 	std::ifstream cfgFile("./data/config.json", std::ifstream::binary);
 
-	// Exit if loading config file failed
+	// Throw if loading config file failed
 	if (cfgFile.is_open() == false)
 	{
 		throw std::exception(std::string("Error: Can't find config.json from given filepath. Filepath: " + cfgFilePath).c_str());
@@ -90,7 +89,7 @@ Game::Game(const std::string & cfgFilePath) :
 	m_gameStates.push(new PlayState(this, "./data/levels/level_0-0.tmx"));
 
 	// Setup some settings
-	setMusicSong(m_gameMusic[0]);
+	setMusicSong(m_gameMusic[1]);
 	setMusicVolume(5);
 }
 

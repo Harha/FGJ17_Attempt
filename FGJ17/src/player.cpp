@@ -37,19 +37,19 @@ std::vector<SprAnimFrame> PLR_JMP_R_V(PLR_JMP_R, PLR_JMP_R + sizeof(PLR_JMP_R) /
 // Player class
 Player::Player(
 	Game * const game,
-	const vec2 & position
+	const vec2 & spawn
 ) :
 	Entity(
 		game,
-		"RUN_RIGHT",
-		AABB(vec2(), vec2()),
-		position
+		"player",
+		spawn
 	)
 {
-	m_sprites.emplace("RUN_LEFT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_RUN_L_V, true, 10));
-	m_sprites.emplace("RUN_RIGHT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_RUN_R_V, true, 10));
-	m_sprites.emplace("JMP_LEFT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_JMP_L_V, false, 2));
-	m_sprites.emplace("JMP_RIGHT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_JMP_R_V, false, 2));
+	m_spriteSheet.emplace("RUN_LEFT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_RUN_L_V, true, 10));
+	m_spriteSheet.emplace("RUN_RIGHT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_RUN_R_V, true, 10));
+	m_spriteSheet.emplace("JMP_LEFT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_JMP_L_V, false, 2));
+	m_spriteSheet.emplace("JMP_RIGHT", Sprite(game->getResMan()->loadTexture("./data/images/cavestory.png"), PLR_JMP_R_V, false, 2));
+	m_currentSprite = "RUN_LEFT";
 }
 
 void Player::update(Level & lvl, double t, double dt)
@@ -79,31 +79,31 @@ void Player::update(Level & lvl, double t, double dt)
 	if (m_state == ENTITY_GROUNDED)
 	{
 		if (m_moveDirX == ENTITY_RIGHT)
-			setSprite("RUN_RIGHT", getSprite().getSprAnimTime(), -1);
+			setCurrentSprite("RUN_RIGHT", getCurrentSprite().getSprAnimTime(), -1);
 		else if (m_moveDirX == ENTITY_LEFT)
-			setSprite("RUN_LEFT", getSprite().getSprAnimTime(), -1);
+			setCurrentSprite("RUN_LEFT", getCurrentSprite().getSprAnimTime(), -1);
 
-		getSprite().setSprAnimRate(static_cast<int32_t>(std::abs(m_velocity.x) * 0.075));
+		getCurrentSprite().setSprAnimRate(static_cast<int32_t>(std::abs(m_velocity.x) * 0.075));
 
 		if (m_input.keyUp)
 		{
-			getSprite().setSprAnimTime(0.0);
-			getSprite().setSprAnimFrame(0);
+			getCurrentSprite().setSprAnimTime(0.0);
+			getCurrentSprite().setSprAnimFrame(0);
 		}
 	}
 
 	if (m_state == ENTITY_FLYING)
 	{
 		if (m_moveDirX == ENTITY_RIGHT)
-			setSprite("JMP_RIGHT", getSprite().getSprAnimTime(), getSprite().getSprAnimFrame());
+			setCurrentSprite("JMP_RIGHT", getCurrentSprite().getSprAnimTime(), getCurrentSprite().getSprAnimFrame());
 		else if (m_moveDirX == ENTITY_LEFT)
-			setSprite("JMP_LEFT", getSprite().getSprAnimTime(), getSprite().getSprAnimFrame());
+			setCurrentSprite("JMP_LEFT", getCurrentSprite().getSprAnimTime(), getCurrentSprite().getSprAnimFrame());
 
 		if (m_moveDirY == ENTITY_DOWN)
-			getSprite().setSprAnimFrame(2);
+			getCurrentSprite().setSprAnimFrame(2);
 	}
 
-	getSprite().update(t, dt);
+	getCurrentSprite().update(t, dt);
 
 	// Normal entity updates
 	Entity::update(lvl, t, dt);

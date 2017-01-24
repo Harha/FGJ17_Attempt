@@ -19,17 +19,13 @@ enum TileLayer
 	TL_FOREGROUND = 1
 };
 
-enum TileType
-{
-	TT_NORMAL = 0,
-	TT_SOLID = 1
-};
-
 enum TilePropertyName
 {
 	TPN_TYPE = 0,
 	TPN_TARGET = 1,
-	TPN_GATE = 2,
+	TPN_TYPE_CUSTOM = 2,
+	TPN_TARGET_CUSTOM = 3,
+	TPN_GATE = 4
 };
 
 enum TilePropertyValue
@@ -38,12 +34,11 @@ enum TilePropertyValue
 	TPV_SOLID = 1,
 	TPV_COMPUTER = 2,
 	TPV_BUTTON = 3,
-	TPV_BLUE = 4,
-	TPV_GREEN = 5,
-	TPV_YELLOW = 6,
-	TPV_PURPLE = 7,
-	TPV_TYPE_CUSTOM = 8,
-	TPV_TARGET_CUSTOM = 9
+	TPV_RED = 4,
+	TPV_BLUE = 5,
+	TPV_GREEN = 6,
+	TPV_YELLOW = 7,
+	TPV_PURPLE = 8
 };
 
 typedef std::pair<TilePropertyName, TilePropertyValue> TileProperty;
@@ -57,19 +52,17 @@ public:
 		Sprite sprite,
 		vec2 position,
 		TileLayer layer,
-		TileType type,
 		TileProperties properties
 	);
 	void render(Display * const display);
 	void renderAABB(Display * const display);
 	void setPosition(const vec2 & position);
 	void setLayer(TileLayer l);
-	void setType(TileType t);
 	vec2 getPosition() const;
 	AABB getAABB() const;
 	TileLayer getLayer() const;
-	TileType getType() const;
 	TileProperties getProperties() const;
+	bool hasPropertyWithValue(TilePropertyName prop_name, TilePropertyValue prop_value) const;
 
 	static TileLayer strToLayer(const std::string & str)
 	{
@@ -89,23 +82,6 @@ public:
 		case cstr2int("FG_"):
 		default:
 			return TL_FOREGROUND;
-		}
-	}
-
-	static TileType strToType(const std::string & str)
-	{
-		// Transform str to uppercase
-		std::string strUpper = str;
-		std::transform(strUpper.begin(), strUpper.end(), strUpper.begin(), ::toupper);
-
-		// Convert string type to tile type
-		switch (cstr2int(strUpper.c_str()))
-		{
-		case cstr2int("NORMAL"):
-			return TT_NORMAL;
-		case cstr2int("SOLID"):
-		default:
-			return TT_SOLID;
 		}
 	}
 
@@ -131,6 +107,12 @@ public:
 				break;
 			case cstr2int("TARGET"):
 				prop.first = TPN_TARGET;
+				break;
+			case cstr2int("TYPE_CUSTOM"):
+				prop.first = TPN_TYPE_CUSTOM;
+				break;
+			case cstr2int("TARGET_CUSTOM"):
+				prop.first = TPN_TARGET_CUSTOM;
 				break;
 			case cstr2int("GATE"):
 				prop.first = TPN_GATE;
@@ -159,6 +141,9 @@ public:
 			case cstr2int("BUTTON"):
 				prop.second = TPV_BUTTON;
 				break;
+			case cstr2int("RED"):
+				prop.second = TPV_RED;
+				break;
 			case cstr2int("BLUE"):
 				prop.second = TPV_BLUE;
 				break;
@@ -170,12 +155,6 @@ public:
 				break;
 			case cstr2int("PURPLE"):
 				prop.second = TPV_PURPLE;
-				break;
-			case cstr2int("TYPE_CUSTOM"):
-				prop.second = TPV_TYPE_CUSTOM;
-				break;
-			case cstr2int("TARGET_CUSTOM"):
-				prop.second = TPV_TARGET_CUSTOM;
 				break;
 			default:
 				LOG_ERROR("Tile: Unknown tile property value: %s! Parsing properties interrupted.", prop_value.c_str());
@@ -196,7 +175,6 @@ private:
 	vec2 m_position;
 	AABB m_aabb;
 	TileLayer m_layer;
-	TileType m_type;
 	TileProperties m_properties;
 };
 

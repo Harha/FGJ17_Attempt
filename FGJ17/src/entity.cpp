@@ -1,4 +1,5 @@
 #include "entity.h"
+#include <fstream>
 #include <SDL.h>
 #include "game.h"
 #include "display.h"
@@ -7,31 +8,55 @@
 
 Entity::Entity(
 	Game * const game,
-	const std::string & sprite,
-	const AABB & aabb,
-	const vec2 & position
+	const std::string & name,
+	const vec2 & spawn
 ) :
 	m_game(game),
-	m_sprites(),
-	m_sprite(sprite),
-	m_aabb(aabb),
-	m_state(ENTITY_GROUNDED),
-	m_moveDirX(ENTITY_LEFT),
-	m_moveDirY(ENTITY_DOWN),
-	m_spawn(position),
-	m_position(position),
-	m_velocity(0, 0),
+	m_json(),
+	m_name(name),
+	m_spriteSheet(),
+	m_currentSprite("NULL"),
+	m_initAABB(vec2(0, 0), vec2(16, 16)),
+	m_physAABB(),
+	m_spawn(spawn),
+	m_position(spawn),
+	m_velocity(),
 	m_airFriction(0.05f),
 	m_grndFriction(0.25f),
-	m_input{ false, false, false, false, false, false }
+	m_input{ false, false, false, false, false, false },
+	m_state(ENTITY_FLYING),
+	m_moveDirX(ENTITY_LEFT),
+	m_moveDirY(ENTITY_DOWN)
 {
+	// Load entity JSON file
+	std::string jsonFilePath("./data/entities/" + m_name + ".json");
+	std::ifstream jsonFile(jsonFilePath, std::ifstream::binary);
 
+	// Throw if loading JSON data failed
+	if (jsonFile.is_open() == false)
+	{
+		throw std::exception(std::string("Error: Can't find JSON data for given entity. Filepath: " + jsonFilePath).c_str());
+	}
+
+	// Assign the contents of JSON file to entity's JSON object
+	jsonFile >> m_json;
+	jsonFile.close();
+
+	// Get entity JSON object
+	json & json_entity = m_json["entity"];
+
+	// Parse entity AABB
+	json & json_aabb = json_entity["aabb"];
+	m_initAABB = AABB(
+		vec2(json_aabb["minX"].get<float>(), json_aabb["minY"].get<float>()),
+		vec2(json_aabb["maxX"].get<float>(), json_aabb["maxY"].get<float>())
+	);
 }
 
 void Entity::update(Level & lvl, double t, double dt)
 {
 	// Teleport to spawn coordinate if we fell out of map
-	if (!lvl.getAABB().collidesYUp(m_aabb))
+	if (!lvl.getAABB().collidesYUp(m_physAABB))
 	{
 		m_position = m_spawn;
 	}
@@ -40,9 +65,8 @@ void Entity::update(Level & lvl, double t, double dt)
 	m_velocity -= m_velocity * ((m_state == ENTITY_FLYING) ? m_airFriction : m_grndFriction);
 	m_position = m_position + m_velocity * static_cast<float>(dt);
 
-	// Update AABB
-	m_aabb.setMinP(m_position);
-	m_aabb.setMaxP(m_position + getSprite().getDimensions() * 0.5f + getSprite().getDimensions() * 0.5f);
+	// Update physical AABB
+	m_physAABB = m_initAABB + m_position;
 
 	// Gravity
 	m_velocity += lvl.getGravity();
@@ -75,22 +99,25 @@ void Entity::update(Level & lvl, double t, double dt)
 	}
 
 	// Collision
+	// TODO: Fix entity getting stuck at corners
 	std::vector<Tile *> nearbyTiles;
-	if (lvl.getTileGrid().getNearestData(m_aabb.getCenterP(), 1, nearbyTiles))
+	if (lvl.getTileGrid().getNearestData(m_physAABB.getCenterP(), 1, nearbyTiles))
 	{
-		AABB aabb_vx(m_aabb.getMinP(), m_aabb.getMaxP());
+		AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
 		aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
-		AABB aabb_vy(m_aabb.getMinP(), m_aabb.getMaxP());
+		AABB aabb_vy(m_physAABB.getMinP(), m_physAABB.getMaxP());
 		aabb_vy = aabb_vy + vec2(0.0f, m_velocity.y * static_cast<float>(dt));
+		AABB aabb_v(m_physAABB.getMinP(), m_physAABB.getMaxP());
+		aabb_v = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), m_velocity.y * static_cast<float>(dt));
 
 		for (Tile * t : nearbyTiles)
 		{
-			if (t->getType() != TT_SOLID)
+			if (!t->hasPropertyWithValue(TPN_TYPE, TPV_SOLID))
 				continue;
 
 			bool inAir = false;
 
-			if (m_aabb.collidesY(t->getAABB()))
+			if (m_physAABB.collidesY(t->getAABB()))
 			{
 				if (aabb_vx.collidesX(t->getAABB()))
 				{
@@ -102,7 +129,7 @@ void Entity::update(Level & lvl, double t, double dt)
 				}
 			}
 
-			if (m_aabb.collidesX(t->getAABB()))
+			if (m_physAABB.collidesX(t->getAABB()))
 			{
 				if (aabb_vy.collidesY(t->getAABB()))
 				{
@@ -126,27 +153,43 @@ void Entity::update(Level & lvl, double t, double dt)
 
 void Entity::render(Display * const display)
 {
-	getSprite().render(display, m_position);
+	getCurrentSprite().render(display, m_position);
+
+	float dt = 1e-2f;
+
+	AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
+	aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
+	AABB aabb_vy(m_physAABB.getMinP(), m_physAABB.getMaxP());
+	aabb_vy = aabb_vy + vec2(0.0f, m_velocity.y * static_cast<float>(dt));
+	AABB aabb_v(m_physAABB.getMinP(), m_physAABB.getMaxP());
+	aabb_v = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), m_velocity.y * static_cast<float>(dt));
+
+	SDL_SetRenderDrawColor(display->getRenderer(), 0, 255, 0, 255);
+	aabb_vx.render(display);
+	SDL_SetRenderDrawColor(display->getRenderer(), 255, 0, 0, 255);
+	aabb_vy.render(display);
+	SDL_SetRenderDrawColor(display->getRenderer(), 0, 255, 255, 255);
+	aabb_v.render(display);
 }
 
 void Entity::renderAABB(Display * const display)
 {
 	SDL_SetRenderDrawColor(display->getRenderer(), 0, 255, 255, 255);
-	m_aabb.render(display);
+	m_physAABB.render(display);
 	SDL_SetRenderDrawColor(display->getRenderer(), 0, 0, 0, 0);
 }
 
-void Entity::setSprite(const std::string & key, double sprAnimTime, int32_t sprAnimFrame)
+void Entity::setCurrentSprite(const std::string & key, double sprAnimTime, int32_t sprAnimFrame)
 {
-	if (m_sprites.find(key) != m_sprites.end())
+	if (m_spriteSheet.find(key) != m_spriteSheet.end())
 	{
-		m_sprite = key;
+		m_currentSprite = key;
 
 		if (sprAnimTime >= 0.0)
-			m_sprites.at(key).setSprAnimTime(sprAnimTime);
+			m_spriteSheet.at(key).setSprAnimTime(sprAnimTime);
 
 		if (sprAnimFrame >= 0.0)
-			m_sprites.at(key).setSprAnimFrame(sprAnimFrame);
+			m_spriteSheet.at(key).setSprAnimFrame(sprAnimFrame);
 	}
 	else
 	{
@@ -154,34 +197,34 @@ void Entity::setSprite(const std::string & key, double sprAnimTime, int32_t sprA
 	}
 }
 
-Sprite & Entity::getSprite()
+std::string Entity::getName() const
 {
-	return m_sprites.at(m_sprite);
+	return m_name;
 }
 
-std::string Entity::getSpriteKey() const
+std::map<std::string, Sprite> Entity::getSpriteSheet() const
 {
-	return m_sprite;
+	return m_spriteSheet;
 }
 
-AABB Entity::getAABB() const
+Sprite & Entity::getCurrentSprite()
 {
-	return m_aabb;
+	return m_spriteSheet.at(m_currentSprite);
 }
 
-EntityState Entity::getState() const
+std::string Entity::getCurrentSpriteKey() const
 {
-	return m_state;
+	return m_currentSprite;
 }
 
-EntityMoveDirX Entity::getMoveDirX() const
+AABB Entity::getInitAABB() const
 {
-	return m_moveDirX;
+	return m_initAABB;
 }
 
-EntityMoveDirY Entity::getMoveDirY() const
+AABB Entity::getPhysAABB() const
 {
-	return m_moveDirY;
+	return m_physAABB;
 }
 
 vec2 Entity::getSpawn() const
@@ -212,4 +255,19 @@ float Entity::getAirFriction() const
 float Entity::getGrndFriction() const
 {
 	return m_grndFriction;
+}
+
+EntityState Entity::getState() const
+{
+	return m_state;
+}
+
+EntityMoveDirX Entity::getMoveDirX() const
+{
+	return m_moveDirX;
+}
+
+EntityMoveDirY Entity::getMoveDirY() const
+{
+	return m_moveDirY;
 }

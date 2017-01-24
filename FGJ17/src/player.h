@@ -8,7 +8,7 @@ class Player : public Entity
 public:
 	Player(
 		Game * const game,
-		const vec2 & position
+		const vec2 & spawn
 	);
 	virtual void update(Level & lvl, double t, double dt) override;
 };

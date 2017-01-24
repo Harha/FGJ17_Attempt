@@ -66,7 +66,7 @@ TmxMap::TmxMap(Game & game, const std::string & filePath) :
 		auto & child_tile_prop = tile.child("properties");
 		for (auto & prop = child_tile_prop.first_child(); prop; prop = prop.next_sibling())
 		{
-			auto tile_property = std::make_pair(prop.attribute("name").value(), prop.attribute("value").value());
+			TmxTilePropertyData tile_property = std::make_pair(prop.attribute("name").value(), prop.attribute("value").value());
 			m_mapData.tileset.tileproperties[tile_id].push_back(tile_property);
 		}
 	}
@@ -82,16 +82,16 @@ TmxMap::TmxMap(Game & game, const std::string & filePath) :
 		uint32_t layer_width = m_mapData.layer.back().width = std::stoi(layer.attribute("width").value());
 		uint32_t layer_height = m_mapData.layer.back().height = std::stoi(layer.attribute("height").value());
 
-		// Get layer type property if exists
-		std::string layer_prop_type;
+		// Get layer properties
 		auto & child_layer_prop = layer.child("properties");
 		for (auto & prop = child_layer_prop.first_child(); prop; prop = prop.next_sibling())
 		{
-			if (prop.attribute("name").value() == std::string("type"))
-			{
-				layer_prop_type = m_mapData.layer.back().type = prop.attribute("value").value();
-			}
+			TmxTilePropertyData layer_property = std::make_pair(prop.attribute("name").value(), prop.attribute("value").value());
+			m_mapData.layer.back().layerproperties.push_back(layer_property);
 		}
+
+		// Get layer properties
+		auto layer_properties = m_mapData.layer.back().layerproperties;
 
 		// Parse all layer tiles
 		uint32_t tile_index = 0;
@@ -112,6 +112,10 @@ TmxMap::TmxMap(Game & game, const std::string & filePath) :
 				uint32_t tileset_x = m_mapData.tileset.tilewidth * (tile_gid % (m_mapData.tileset.width / m_mapData.tileset.tilewidth));
 				uint32_t tileset_y = m_mapData.tileset.tileheight * static_cast<uint32_t>(std::ceil(tile_gid / (m_mapData.tileset.width / m_mapData.tileset.tilewidth)));
 
+				// Fuse individual tile properties and the tile layer properties together
+				auto tile_properties = m_mapData.tileset.tileproperties[tile_gid];
+				tile_properties.insert(tile_properties.end(), layer_properties.begin(), layer_properties.end());
+
 				// Insert the new tile into our layer's data
 				m_mapData.layer.back().tiles.push_back(Tile(
 					game,
@@ -124,8 +128,7 @@ TmxMap::TmxMap(Game & game, const std::string & filePath) :
 					),
 					vec2(static_cast<float>(tile_x), static_cast<float>(tile_y)),
 					Tile::strToLayer(layer_name),
-					Tile::strToType(layer_prop_type),
-					Tile::strToProperties(m_mapData.tileset.tileproperties[tile_gid])
+					Tile::strToProperties(tile_properties)
 				));
 			}
 

@@ -37,9 +37,9 @@ struct TmxImgLayerData
 struct TmxLayerData
 {
 	std::string name;
-	std::string type;
 	uint32_t width;
 	uint32_t height;
+	TmxTilePropertiesData layerproperties;
 	std::vector<Tile> tiles;
 };
 

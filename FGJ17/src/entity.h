@@ -3,9 +3,12 @@
 
 #include <string>
 #include <map>
+#include "3rdparty/json.hpp"
 #include "sprite.h"
 #include "vec2.h"
 #include "aabb.h"
+
+using json = nlohmann::json;
 
 class Game;
 class Display;
@@ -22,12 +25,12 @@ struct EntityInput
 
 	bool operator==(const EntityInput & i) const
 	{
-		if (keyUp		== i.keyUp		&&
-			keyDown		== i.keyDown	&&
-			keyLeft		== i.keyLeft	&&
-			keyRight	== i.keyRight	&&
-			keyA		== i.keyA		&&
-			keyB		== i.keyB		)
+		if (keyUp == i.keyUp		&&
+			keyDown == i.keyDown	&&
+			keyLeft == i.keyLeft	&&
+			keyRight == i.keyRight	&&
+			keyA == i.keyA		&&
+			keyB == i.keyB)
 		{
 			return true;
 		}
@@ -65,40 +68,45 @@ class Entity
 public:
 	Entity(
 		Game * const game,
-		const std::string & sprite,
-		const AABB & aabb,
-		const vec2 & position
+		const std::string & name,
+		const vec2 & spawn
 	);
 	virtual void update(Level & lvl, double t, double dt);
 	virtual void render(Display * const display);
 	virtual void renderAABB(Display * const display);
-	void setSprite(const std::string & key, double sprAnimTime, int32_t sprAnimFrame);
-	Sprite & getSprite();
-	std::string getSpriteKey() const;
-	AABB getAABB() const;
-	EntityState getState() const;
-	EntityMoveDirX getMoveDirX() const;
-	EntityMoveDirY getMoveDirY() const;
+	void setCurrentSprite(const std::string & key, double sprAnimTime, int32_t sprAnimFrame);
+	std::string getName() const;
+	std::map<std::string, Sprite> getSpriteSheet() const;
+	Sprite & getCurrentSprite();
+	std::string getCurrentSpriteKey() const;
+	AABB getInitAABB() const;
+	AABB getPhysAABB() const;
 	vec2 getSpawn() const;
 	vec2 getPosition() const;
 	vec2 getVelocity() const;
 	float getAirFriction() const;
 	float getGrndFriction() const;
 	EntityInput & getInput();
+	EntityState getState() const;
+	EntityMoveDirX getMoveDirX() const;
+	EntityMoveDirY getMoveDirY() const;
 protected:
 	Game * const m_game;
-	std::map<std::string, Sprite> m_sprites;
-	std::string m_sprite;
-	AABB m_aabb;
-	EntityState m_state;
-	EntityMoveDirX m_moveDirX;
-	EntityMoveDirY m_moveDirY;
+	json m_json;
+	std::string m_name;
+	std::map<std::string, Sprite> m_spriteSheet;
+	std::string m_currentSprite;
+	AABB m_initAABB;
+	AABB m_physAABB;
 	vec2 m_spawn;
 	vec2 m_position;
 	vec2 m_velocity;
 	float m_airFriction;
 	float m_grndFriction;
 	EntityInput m_input;
+	EntityState m_state;
+	EntityMoveDirX m_moveDirX;
+	EntityMoveDirY m_moveDirY;
 };
 
 #endif // ENTITY_H
