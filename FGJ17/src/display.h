@@ -23,10 +23,32 @@ public:
 	~Display();
 	void clear();
 	void render();
-	void drawImage(SDL_Texture * texture, SDL_Rect * sourceRect, SDL_Rect * destRect, const vec2 & destPos, bool clip = false);
-	void drawImageRepeat(SDL_Texture * texture, SDL_Rect * sourceRect, SDL_Rect * destRect, const vec2 & destPos, int32_t w, int32_t h, bool clip = false);
-	void drawText(TTF_Font * font, const std::string & text, SDL_Color color, const vec2 & destPos);
-	void drawRectangle(const vec2 & tl, const vec2 & br);
+	void drawImage(
+		SDL_Texture * texture,
+		SDL_Rect * sourceRect,
+		SDL_Rect * destRect,
+		const vec2 & destPos,
+		bool clip = false
+	);
+	void drawImageRepeat(
+		SDL_Texture * texture,
+		SDL_Rect * sourceRect,
+		SDL_Rect * destRect,
+		const vec2 & destPos,
+		int32_t w,
+		int32_t h,
+		bool clip = false
+	);
+	void drawText(
+		TTF_Font * font,
+		const std::string & text,
+		SDL_Color color,
+		const vec2 & destPos
+	);
+	void drawRectangle(
+		const vec2 & tl,
+		const vec2 & br
+	);
 	void setState(uint32_t flags);
 	void setTitle(const std::string & title);
 	void setOffset(const vec2 & offset);

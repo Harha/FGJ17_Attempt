@@ -2,6 +2,7 @@
 #include <fstream>
 #include <SDL.h>
 #include "game.h"
+#include "resmanager.h"
 #include "display.h"
 #include "level.h"
 #include "tile.h"
@@ -16,7 +17,7 @@ Entity::Entity(
 	m_name(name),
 	m_spriteSheet(),
 	m_currentSprite("NULL"),
-	m_initAABB(vec2(0, 0), vec2(16, 16)),
+	m_initAABB(),
 	m_physAABB(),
 	m_spawn(spawn),
 	m_position(spawn),
@@ -51,15 +52,47 @@ Entity::Entity(
 		vec2(json_aabb["minX"].get<float>(), json_aabb["minY"].get<float>()),
 		vec2(json_aabb["maxX"].get<float>(), json_aabb["maxY"].get<float>())
 	);
+
+	// Parse entity spritesheet & current sprite
+	std::string spriteSheet = json_entity["spriteSheet"].get<std::string>();
+	m_currentSprite = json_entity["currentSprite"].get<std::string>();
+
+	// Parse entity sprites and sprite animation frames
+	json & json_sprites = json_entity["sprites"];
+	size_t n_sprites = json_sprites.size();
+	for (size_t i = 0; i < n_sprites; i++)
+	{
+		// Get sprite JSON object
+		json & json_sprite = json_sprites[i];
+
+		// Get sprite properties
+		std::string name = json_sprite["name"].get<std::string>();
+		bool animRepeat = json_sprite["animRepeat"].get<bool>();
+		int32_t animRate = json_sprite["animRate"].get<int32_t>();
+
+		// Sprite animation frames list
+		std::vector<SprAnimFrame> animFrames;
+		size_t n_frames = json_sprites[i]["animFrames"].size();
+		for (size_t j = 0; j < n_frames; j++)
+		{
+			animFrames.push_back(SprAnimFrame(
+				json_sprite["animFrames"][j]["x"].get<int32_t>(),
+				json_sprite["animFrames"][j]["y"].get<int32_t>(),
+				json_sprite["animFrames"][j]["w"].get<int32_t>(),
+				json_sprite["animFrames"][j]["h"].get<int32_t>()
+			));
+		}
+
+		// Insert the new sprite into our spriteSheet
+		m_spriteSheet.emplace(name, Sprite(game->getResMan()->loadTexture(spriteSheet), animFrames, animRepeat, animRate));
+	}
 }
 
 void Entity::update(Level & lvl, double t, double dt)
 {
 	// Teleport to spawn coordinate if we fell out of map
 	if (!lvl.getAABB().collidesYUp(m_physAABB))
-	{
 		m_position = m_spawn;
-	}
 
 	// Update v & s
 	m_velocity -= m_velocity * ((m_state == ENTITY_FLYING) ? m_airFriction : m_grndFriction);
@@ -73,9 +106,7 @@ void Entity::update(Level & lvl, double t, double dt)
 
 	// Movement dir -Y
 	if (m_velocity.y <= 0.0)
-	{
 		m_moveDirY = ENTITY_DOWN;
-	}
 
 	// Jumping
 	if (m_input.keyUp && m_state == ENTITY_GROUNDED)
@@ -101,7 +132,7 @@ void Entity::update(Level & lvl, double t, double dt)
 	// Collision
 	// TODO: Fix entity getting stuck at corners
 	std::vector<Tile *> nearbyTiles;
-	if (lvl.getTileGrid().getNearestData(m_physAABB.getCenterP(), 1, nearbyTiles))
+	if (lvl.getTileGrid()->getNearestData(m_physAABB.getCenterP(), 1, nearbyTiles))
 	{
 		AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
 		aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
@@ -154,22 +185,6 @@ void Entity::update(Level & lvl, double t, double dt)
 void Entity::render(Display * const display)
 {
 	getCurrentSprite().render(display, m_position);
-
-	float dt = 1e-2f;
-
-	AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
-	aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
-	AABB aabb_vy(m_physAABB.getMinP(), m_physAABB.getMaxP());
-	aabb_vy = aabb_vy + vec2(0.0f, m_velocity.y * static_cast<float>(dt));
-	AABB aabb_v(m_physAABB.getMinP(), m_physAABB.getMaxP());
-	aabb_v = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), m_velocity.y * static_cast<float>(dt));
-
-	SDL_SetRenderDrawColor(display->getRenderer(), 0, 255, 0, 255);
-	aabb_vx.render(display);
-	SDL_SetRenderDrawColor(display->getRenderer(), 255, 0, 0, 255);
-	aabb_vy.render(display);
-	SDL_SetRenderDrawColor(display->getRenderer(), 0, 255, 255, 255);
-	aabb_v.render(display);
 }
 
 void Entity::renderAABB(Display * const display)

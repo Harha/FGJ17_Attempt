@@ -8,12 +8,12 @@
 class PlayState : public GameState
 {
 public:
-	PlayState(Game * const game, const std::string & lvlPath);
+	PlayState(Game * const game, Level * level);
 	virtual ~PlayState() override;
 	virtual void update(double t, double dt) override;
 	virtual void render(Display * const display) override;
 private:
-	Level m_level;
+	Level * m_level;
 };
 
 #endif // PLAYSTATE_H

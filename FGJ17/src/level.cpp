@@ -1,4 +1,7 @@
 #include "level.h"
+#include <fstream>
+#include "macros.h"
+#include "tools.h"
 #include "game.h"
 #include "resmanager.h"
 #include "display.h"
@@ -7,42 +10,71 @@
 #include "tmxmap.h"
 #include "entity.h"
 #include "player.h"
-#include "macros.h"
 
 Level::Level(
 	Game * const game,
-	const std::string & tmxFilePath
+	const std::string & name,
+	TmxMap * const tmxMap
 ) :
 	m_game(game),
-	m_tmxMap(new TmxMap(*m_game, tmxFilePath)),
+	m_json(),
+	m_name(name),
+	m_tmxMap(tmxMap),
 	m_tileWidth(m_tmxMap->getMapData().tilewidth),
 	m_tileHeight(m_tmxMap->getMapData().tileheight),
 	m_width(m_tmxMap->getMapData().width * m_tileWidth),
 	m_height(m_tmxMap->getMapData().height * m_tileHeight),
 	m_aabb(vec2(0, 0), vec2(static_cast<float>(m_width), static_cast<float>(m_height))),
-	m_gravity(vec2(0, -9.81f * 1.0f)),
-	m_camera(vec2(0, 0)),
+	m_gravity(),
+	m_camera(),
 	m_player(nullptr),
-	m_tileGrid(32),
+	m_tileGrid(nullptr),
 	m_entityVector(),
 	m_bgImgVector()
 {
-	// Parse tile layers
-	for (TmxLayerData & l : m_tmxMap->getMapData().layer)
+	// Load level JSON file
+	std::string jsonFilePath("./data/levels/" + m_name + ".json");
+	std::ifstream jsonFile(jsonFilePath, std::ifstream::binary);
+
+	// Throw if loading JSON data failed
+	if (jsonFile.is_open() == false)
 	{
-		for (Tile & t : l.tiles)
+		throw std::exception(std::string("Error: Can't find JSON data for given level. Filepath: " + jsonFilePath).c_str());
+	}
+
+	// Assign the contents of JSON file to level's JSON object
+	jsonFile >> m_json;
+	jsonFile.close();
+
+	// Get level JSON object
+	json & json_level = m_json["level"];
+
+	// Parse level gravity
+	m_gravity = vec2(
+		json_level["gravity"]["x"].get<float>(),
+		json_level["gravity"]["y"].get<float>()
+	);
+
+	// Parse level tile grid
+	m_tileGrid = new Grid<Tile *>(json_level["tileGrid"]["cellDivisor"].get<int32_t>());
+
+	// Parse all tile layers
+	for (auto & l : m_tmxMap->getMapData().layer)
+	{
+		// Parse tiles per layer
+		for (auto & t : l.tiles)
 		{
-			m_tileGrid.insertData(t.getPosition(), &t);
+			m_tileGrid->insertData(t.getPosition(), &t);
 		}
 	}
 
-	// Parse object groups
-	for (TmxObjectgroupData & ogd : m_tmxMap->getMapData().objectgroup)
+	// Parse all object groups
+	for (auto & ogd : m_tmxMap->getMapData().objectgroup)
 	{
-		// Parse entity objects
+		// Parse all entities per object group data
 		if (ogd.name == "ENTITIES")
 		{
-			for (TmxObject & o : ogd.objects)
+			for (auto & o : ogd.objects)
 			{
 				LOG_INFO("Level: Parsed entity name: %s, type: %s", o.name.c_str(), o.type.c_str());
 
@@ -76,8 +108,6 @@ Level::~Level()
 	{
 		DELETE_SP(e);
 	}
-
-	DELETE_SP(m_tmxMap);
 }
 
 void Level::update(double t, double dt)
@@ -114,7 +144,7 @@ void Level::render(Display * const display)
 	// Render tiles, background pass
 	std::vector<Tile *> tilesToRenderBg;
 	std::vector<Tile *> tilesToRenderFg;
-	if (m_tileGrid.getNearestData(m_camera, 4, tilesToRenderBg))
+	if (m_tileGrid->getNearestData(m_camera, 4, tilesToRenderBg))
 	{
 		for (Tile * t : tilesToRenderBg)
 		{
@@ -190,7 +220,7 @@ Entity * const Level::getPlayer()
 	return m_player;
 }
 
-Grid<Tile *> & Level::getTileGrid()
+Grid<Tile *> * Level::getTileGrid()
 {
 	return m_tileGrid;
 }

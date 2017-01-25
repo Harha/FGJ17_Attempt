@@ -7,7 +7,7 @@
 #include "display.h"
 #include "macros.h"
 
-TmxMap::TmxMap(Game & game, const std::string & filePath) :
+TmxMap::TmxMap(Game * const game, const std::string & filePath) :
 	m_filePath(filePath),
 	m_mapData
 {
@@ -120,7 +120,7 @@ TmxMap::TmxMap(Game & game, const std::string & filePath) :
 				m_mapData.layer.back().tiles.push_back(Tile(
 					game,
 					Sprite(
-						game.getResMan()->loadTexture(m_mapData.tileset.source),
+						game->getResMan()->loadTexture(m_mapData.tileset.source),
 						tileset_x,
 						tileset_y,
 						m_mapData.tileset.tilewidth,
@@ -180,8 +180,26 @@ TmxMap::TmxMap(Game & game, const std::string & filePath) :
 			int32_t object_width = std::stoi(object.attribute("width").value());
 			int32_t object_height = std::stoi(object.attribute("height").value());
 
+			// Get object properties
+			TmxObjectPropertiesData object_properties;
+			auto & child_object_prop = object.child("properties");
+			for (auto & prop = child_object_prop.first_child(); prop; prop = prop.next_sibling())
+			{
+				TmxObjectPropertyData object_property = std::make_pair(prop.attribute("name").value(), prop.attribute("value").value());
+				object_properties.push_back(object_property);
+			}
+
 			// Insert the object into our layer's data
-			m_mapData.objectgroup.back().objects.push_back(TmxObject{ object_id, object_name, object_type, object_x, object_y, object_width, object_height });
+			m_mapData.objectgroup.back().objects.push_back(TmxObject{
+				object_id,
+				object_name,
+				object_type,
+				object_x,
+				object_y,
+				object_width,
+				object_height,
+				object_properties
+			});
 
 			// Increment object index by one
 			object_index++;

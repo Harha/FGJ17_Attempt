@@ -13,13 +13,13 @@
 
 class Game;
 
-enum TileLayer
+enum TileLayer : uint8_t
 {
 	TL_BACKGROUND = 0,
 	TL_FOREGROUND = 1
 };
 
-enum TilePropertyName
+enum TilePropertyName : uint8_t
 {
 	TPN_TYPE = 0,
 	TPN_TARGET = 1,
@@ -28,7 +28,7 @@ enum TilePropertyName
 	TPN_GATE = 4
 };
 
-enum TilePropertyValue
+enum TilePropertyValue : uint8_t
 {
 	TPV_NORMAL = 0,
 	TPV_SOLID = 1,
@@ -48,7 +48,7 @@ class Tile
 {
 public:
 	Tile(
-		Game & game,
+		Game * const game,
 		Sprite sprite,
 		vec2 position,
 		TileLayer layer,

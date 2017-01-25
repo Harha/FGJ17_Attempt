@@ -4,6 +4,8 @@
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
 #include "game.h"
+#include "level.h"
+#include "tmxmap.h"
 #include "display.h"
 #include "macros.h"
 
@@ -12,7 +14,8 @@ ResManager::ResManager(Game * const game) :
 	m_surfaces(),
 	m_textures(),
 	m_fonts(),
-	m_music()
+	m_music(),
+	m_levels()
 {
 
 }
@@ -30,6 +33,9 @@ ResManager::~ResManager()
 
 	for (auto &entry : m_textures)
 		SDL_DestroyTexture(entry.second);
+
+	for (auto & entry : m_levels)
+		delete entry.second;
 }
 
 SDL_Surface * const ResManager::loadSurface(const std::string & filePath)
@@ -106,4 +112,23 @@ Mix_Music * const ResManager::loadMusic(const std::string & filePath)
 	}
 
 	return m_music[filePath];
+}
+
+Level * const ResManager::loadLevel(const std::string & filePath, const std::string & name)
+{
+	if (m_levels.count(filePath) == 0)
+	{
+		m_levels[filePath] = new Level(m_game, name, new TmxMap(m_game, filePath));
+
+		if (m_levels[filePath] == NULL)
+		{
+			m_levels.erase(filePath);
+			ERR("ResManager: Error loading level (" << filePath << " into memory.");
+			return nullptr;
+		}
+
+		LOG("ResManager: Loaded level (" << filePath << ") into memory.");
+	}
+
+	return m_levels[filePath];
 }

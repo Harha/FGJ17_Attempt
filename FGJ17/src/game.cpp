@@ -23,6 +23,7 @@ Game::Game(const std::string & cfgFilePath) :
 	m_resMan(new ResManager(this)),
 	m_gameFont(),
 	m_gameMusic(),
+	m_gameLevels(),
 
 	// Physics
 	m_startTime(0),
@@ -49,44 +50,60 @@ Game::Game(const std::string & cfgFilePath) :
 	cfgFile >> m_config;
 	cfgFile.close();
 
-	// Create our display
+	// Get game JSON object
+	json & json_game = m_config["game"];
+
+	// Parse window configuration, create display
+	json & json_window = json_game["window"];
 	m_display = new Display(
-		m_config["game"]["window"]["title"].get<std::string>(),
-		m_config["game"]["window"]["width"].get<int32_t>(),
-		m_config["game"]["window"]["height"].get<int32_t>(),
-		m_config["game"]["window"]["scale"].get<int32_t>()
+		json_window["title"].get<std::string>(),
+		json_window["width"].get<int32_t>(),
+		json_window["height"].get<int32_t>(),
+		json_window["scale"].get<int32_t>()
 	);
 
 	// Set to fullscreen if config says so
-	if (m_config["game"]["window"]["fullscreen"].get<bool>() == true)
+	if (json_window["fullscreen"].get<bool>() == true)
 		m_display->setState(SDL_WINDOW_FULLSCREEN);
 
 	// Configure physics
-	m_timeStep = m_config["game"]["physics"]["timeStep"].get<double>();
-	m_tickTime = 1000.0 / m_config["game"]["physics"]["tickRate"].get<double>();
+	json & json_phys = json_game["physics"];
+	m_timeStep = json_phys["timeStep"].get<double>();
+	m_tickTime = 1000.0 / json_phys["tickRate"].get<double>();
 	m_deltaUpTime = m_tickTime;
 
 	// Configure graphics
-	m_frameTime = 1000.0 / m_config["game"]["graphics"]["frameRate"].get<double>();
+	json & json_graph = json_game["graphics"];
+	m_frameTime = 1000.0 / json_graph["frameRate"].get<double>();
 	m_deltaReTime = m_frameTime;
 
 	// Load fonts
-	size_t n_fonts = m_config["game"]["fonts"].size();
+	json & json_fonts = json_game["fonts"];
+	size_t n_fonts = json_fonts.size();
 	for (size_t i = 0; i < n_fonts; i++)
 	{
-		json font = m_config["game"]["fonts"][i];
-		m_gameFont.push_back(m_resMan->loadFont("./data/fonts/" + font["fileName"].get<std::string>(), font["fontSize"].get<uint32_t>()));
+		json & json_font = json_fonts[i];
+		m_gameFont.push_back(m_resMan->loadFont("./data/fonts/" + json_font["fileName"].get<std::string>(), json_font["fontSize"].get<uint32_t>()));
 	}
 
 	// Load musicz
-	size_t n_music = m_config["game"]["music"].size();
+	json & json_music = json_game["music"];
+	size_t n_music = json_music.size();
 	for (size_t i = 0; i < n_music; i++)
 	{
-		m_gameMusic.push_back(m_resMan->loadMusic("./data/music/" + m_config["game"]["music"][i].get<std::string>()));
+		m_gameMusic.push_back(m_resMan->loadMusic("./data/music/" + json_music[i].get<std::string>()));
+	}
+
+	// Load levels
+	json & json_levels = json_game["levels"];
+	size_t n_levels = json_levels.size();
+	for (size_t i = 0; i < n_levels; i++)
+	{
+		m_gameLevels.push_back(m_resMan->loadLevel("./data/levels/" + json_levels[i].get<std::string>() + ".tmx", json_levels[i].get<std::string>()));
 	}
 
 	// Pust the initial gamestate into stack
-	m_gameStates.push(new PlayState(this, "./data/levels/level_0-0.tmx"));
+	m_gameStates.push(new PlayState(this, m_gameLevels[0]));
 
 	// Setup some settings
 	setMusicSong(m_gameMusic[1]);
@@ -229,6 +246,11 @@ std::vector<TTF_Font *> Game::getGameFont() const
 std::vector<Mix_Music *> Game::getGameMusic() const
 {
 	return m_gameMusic;
+}
+
+std::vector<Level *> Game::getGameLevels() const
+{
+	return m_gameLevels;
 }
 
 // Physics

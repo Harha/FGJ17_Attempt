@@ -3,9 +3,12 @@
 
 #include <string>
 #include <vector>
+#include "3rdparty/json.hpp"
 #include "vec2.h"
 #include "grid.h"
 #include "aabb.h"
+
+using json = nlohmann::json;
 
 class Game;
 class Display;
@@ -19,7 +22,8 @@ class Level
 public:
 	Level(
 		Game * const game,
-		const std::string & tmxFilePath
+		const std::string & name,
+		TmxMap * const tmxMap
 	);
 	~Level();
 	void update(double t, double dt);
@@ -32,12 +36,14 @@ public:
 	vec2 getGravity() const;
 	vec2 getCamera() const;
 	Entity * const getPlayer();
-	Grid<Tile *> & getTileGrid();
+	Grid<Tile *> * getTileGrid();
 	std::vector<Entity *> & getEntityVector();
 	std::vector<Image *> & getBgImgVector();
 private:
 	Game * const m_game;
-	TmxMap * m_tmxMap;
+	json m_json;
+	std::string m_name;
+	TmxMap * const m_tmxMap;
 	uint32_t m_tileWidth;
 	uint32_t m_tileHeight;
 	uint32_t m_width;
@@ -46,7 +52,7 @@ private:
 	vec2 m_gravity;
 	vec2 m_camera;
 	Entity * m_player;
-	Grid<Tile *> m_tileGrid;
+	Grid<Tile *> * m_tileGrid;
 	std::vector<Entity *> m_entityVector;
 	std::vector<Image *> m_bgImgVector;
 };

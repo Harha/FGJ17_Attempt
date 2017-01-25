@@ -25,10 +25,7 @@
 			"Ko0x - Caramel Condition.xm"
 		],
 		"levels": [
-			{
-				"fileName": "level_0-0.tmx",
-				"gravity": -9.81
-			}
+			"level_0-0"
 		]
 	}
 }

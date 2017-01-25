@@ -12,6 +12,7 @@ class ResManager;
 class GameState;
 typedef struct _TTF_Font TTF_Font;
 typedef struct _Mix_Music Mix_Music;
+class Level;
 
 enum GameRunState
 {
@@ -42,6 +43,7 @@ public:
 	ResManager * const getResMan() const;
 	std::vector<TTF_Font *> getGameFont() const;
 	std::vector<Mix_Music *> getGameMusic() const;
+	std::vector<Level *> getGameLevels() const;
 
 	// Physics
 	double getCurrentTimeInMs() const;
@@ -62,6 +64,7 @@ private:
 	ResManager * m_resMan;
 	std::vector<TTF_Font *> m_gameFont;
 	std::vector<Mix_Music *> m_gameMusic;
+	std::vector<Level *> m_gameLevels;
 
 	// Physics
 	double m_startTime;

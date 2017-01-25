@@ -4,7 +4,7 @@
 
 
 Tile::Tile(
-	Game & game,
+	Game * const game,
 	Sprite sprite,
 	vec2 position,
 	TileLayer layer,

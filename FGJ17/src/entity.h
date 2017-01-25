@@ -22,27 +22,6 @@ struct EntityInput
 	bool keyRight;
 	bool keyA;
 	bool keyB;
-
-	bool operator==(const EntityInput & i) const
-	{
-		if (keyUp == i.keyUp		&&
-			keyDown == i.keyDown	&&
-			keyLeft == i.keyLeft	&&
-			keyRight == i.keyRight	&&
-			keyA == i.keyA		&&
-			keyB == i.keyB)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	bool operator!=(const EntityInput & i) const
-	{
-		return !(*this == i);
-	}
-
 };
 
 enum EntityState

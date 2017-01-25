@@ -6,6 +6,7 @@
 #include <map>
 #include <utility>
 #include "tmxtile.h"
+#include "tmxobject.h"
 #include "tile.h"
 
 class Game;
@@ -20,6 +21,7 @@ struct TmxObject
 	int32_t y;
 	int32_t width;
 	int32_t height;
+	TmxObjectPropertiesData objectproperties;
 };
 
 struct TmxObjectgroupData
@@ -73,7 +75,7 @@ struct TmxMapData
 class TmxMap
 {
 public:
-	TmxMap(Game & game, const std::string & filePath);
+	TmxMap(Game * const game, const std::string & filePath);
 	void render(Display * const display);
 	TmxMapData & getMapData();
 private:
