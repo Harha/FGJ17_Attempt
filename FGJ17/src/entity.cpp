@@ -140,7 +140,7 @@ void Entity::update(Level & lvl, double t, double dt)
 	// Collision against tiles
 	// TODO: Fix entity getting stuck at corners
 	std::vector<Tile *> nearbyTiles;
-	if (lvl.getTileGrid()->getNearestData(m_physAABB.getCenterP(), 1, nearbyTiles))
+	if (lvl.getTileGrid()->getNearestData(m_physAABB.getCenterP(), m_game->getPhysicsDistance(), nearbyTiles))
 	{
 		AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
 		aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
@@ -191,7 +191,7 @@ void Entity::update(Level & lvl, double t, double dt)
 
 	// Collision against entities
 	std::vector<Entity *> nearbyEntities;
-	if (lvl.getEntityGrid()->getNearestData(m_physAABB.getCenterP(), 1, nearbyEntities))
+	if (lvl.getEntityGrid()->getNearestData(m_physAABB.getCenterP(), m_game->getPhysicsDistance(), nearbyEntities))
 	{
 		AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
 		aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);

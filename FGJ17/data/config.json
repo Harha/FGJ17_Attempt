@@ -4,15 +4,17 @@
 			"title": "#GGJ17 #FGJ17 @Harha",
 			"width": 1280,
 			"height": 720,
-			"scale": 3,
+			"scale": 4,
 			"fullscreen": false
 		},
 		"physics": {
 			"timeStep": 1e-2,
-			"tickRate": 80.0
+			"tickRate": 80.0,
+			"physicsDistance": 2
 		},
 		"graphics": {
-			"frameRate": 128.0
+			"frameRate": 128.0,
+			"renderDistance": 16
 		},
 		"fonts": [
 			{

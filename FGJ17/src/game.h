@@ -49,10 +49,12 @@ public:
 	double getCurrentTimeInMs() const;
 	double getDeltaUpTime() const;
 	double getTicksInMs() const;
+	int32_t getPhysicsDistance() const;
 
 	// Graphics
 	Display * const getDisplay() const;
 	double getDeltaReTime() const;
+	int32_t getRenderDistance() const;
 private:
 	// Game state
 	json m_config;
@@ -72,11 +74,13 @@ private:
 	double m_ticks;
 	double m_tickTime;
 	double m_deltaUpTime;
+	int32_t m_physicsDistance;
 
 	// Graphics
 	Display * m_display;
 	double m_frameTime;
 	double m_deltaReTime;
+	int32_t m_renderDistance;
 };
 
 #endif // GAME_H

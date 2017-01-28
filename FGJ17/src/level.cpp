@@ -155,19 +155,19 @@ void Level::render(Display * const display)
 	display->setOffset(offset);
 
 	// Render background images
-	for (Image * i : m_bgImgVector)
+	/*for (Image * i : m_bgImgVector)
 	{
 		vec2 offset_parallax(offset.x * 0.5f, offset.y * 0.5f);
 
 		display->setOffset(offset_parallax);
 		i->renderRepeat(display, vec2(0, 0), m_width, m_height);
 		display->setOffset(offset);
-	}
+	}*/
 
 	// Render tiles, background pass
 	std::vector<Tile *> tilesToRenderBg;
 	std::vector<Tile *> tilesToRenderFg;
-	if (m_tileGrid->getNearestData(m_camera, 4, tilesToRenderBg))
+	if (m_tileGrid->getNearestData(m_camera, m_game->getRenderDistance(), tilesToRenderBg))
 	{
 		for (Tile * t : tilesToRenderBg)
 		{
@@ -184,7 +184,7 @@ void Level::render(Display * const display)
 
 	// Render entities
 	std::vector<Entity *> entitiesToRender;
-	if (m_entityGrid->getNearestData(m_camera, 4, entitiesToRender))
+	if (m_entityGrid->getNearestData(m_camera, m_game->getRenderDistance(), entitiesToRender))
 	{
 		for (Entity * e : entitiesToRender)
 		{
@@ -200,9 +200,9 @@ void Level::render(Display * const display)
 	}
 
 	// Render level AABB
-	SDL_SetRenderDrawColor(display->getRenderer(), 255, 255, 255, 255);
+	/*SDL_SetRenderDrawColor(display->getRenderer(), 255, 255, 255, 255);
 	m_aabb.render(display);
-	SDL_SetRenderDrawColor(display->getRenderer(), 0, 0, 0, 0);
+	SDL_SetRenderDrawColor(display->getRenderer(), 0, 0, 0, 0);*/
 
 	// Reset display offset
 	display->setOffset(vec2(0, 0));

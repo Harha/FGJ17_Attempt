@@ -31,11 +31,13 @@ Game::Game(const std::string & cfgFilePath) :
 	m_ticks(0),
 	m_tickTime(1000.0 / 80.0),
 	m_deltaUpTime(m_tickTime),
+	m_physicsDistance(1),
 
 	// Graphics
 	m_display(nullptr),
 	m_deltaReTime(m_frameTime),
-	m_frameTime(1000.0 / 128.0)
+	m_frameTime(1000.0 / 128.0),
+	m_renderDistance(1)
 {
 	// Load config.json file
 	std::ifstream cfgFile("./data/config.json", std::ifstream::binary);
@@ -71,11 +73,13 @@ Game::Game(const std::string & cfgFilePath) :
 	m_timeStep = json_phys["timeStep"].get<double>();
 	m_tickTime = 1000.0 / json_phys["tickRate"].get<double>();
 	m_deltaUpTime = m_tickTime;
+	m_physicsDistance = json_phys["physicsDistance"].get<int32_t>();
 
 	// Configure graphics
 	json & json_graph = json_game["graphics"];
 	m_frameTime = 1000.0 / json_graph["frameRate"].get<double>();
 	m_deltaReTime = m_frameTime;
+	m_renderDistance = json_graph["renderDistance"].get<int32_t>();
 
 	// Load fonts
 	json & json_fonts = json_game["fonts"];
@@ -269,6 +273,11 @@ double Game::getTicksInMs() const
 	return static_cast<double>((SDL_GetPerformanceCounter() * 1000) / SDL_GetPerformanceFrequency());
 }
 
+int32_t Game::getPhysicsDistance() const
+{
+	return m_physicsDistance;
+}
+
 // Graphics
 Display * const Game::getDisplay() const
 {
@@ -278,4 +287,9 @@ Display * const Game::getDisplay() const
 double Game::getDeltaReTime() const
 {
 	return m_deltaReTime;
+}
+
+int32_t Game::getRenderDistance() const
+{
+	return m_renderDistance;
 }
