@@ -132,6 +132,11 @@ struct vec2
 		return vec2(std::round(x), std::round(y));
 	}
 
+	vec2 floor() const
+	{
+		return vec2(std::floor(x), std::floor(y));
+	}
+
 };
 
 inline vec2 operator+(const float f, const vec2 &other)

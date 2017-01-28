@@ -4,7 +4,9 @@
 #include <string>
 #include <map>
 #include "3rdparty/json.hpp"
+#include "macros.h"
 #include "sprite.h"
+#include "tmxobject.h"
 #include "vec2.h"
 #include "aabb.h"
 
@@ -24,23 +26,48 @@ struct EntityInput
 	bool keyB;
 };
 
-enum EntityState
+enum EntityPropertyName : uint8_t
+{
+	EPN_TYPE = 0,
+	EPN_TARGET = 1,
+	EPN_TYPE_CUSTOM = 2,
+	EPN_TARGET_CUSTOM = 3,
+	EPN_COLOR = 4
+};
+
+enum EntityPropertyValue : uint8_t
+{
+	EPV_NORMAL = 0,
+	EPV_SOLID = 1,
+	EPV_RED = 2,
+	EPV_BLUE = 3,
+	EPV_GREEN = 4,
+	EPV_YELLOW = 5,
+	EPV_PURPLE = 6
+};
+
+enum EntityState : uint8_t
 {
 	ENTITY_GROUNDED = 0,
 	ENTITY_FLYING = 1
 };
 
-enum EntityMoveDirX
+enum EntityMoveDirX : uint8_t
 {
 	ENTITY_LEFT = 0,
-	ENTITY_RIGHT = 1
+	ENTITY_RIGHT = 1,
+	ENTITY_STATIONARY_X = 2
 };
 
-enum EntityMoveDirY
+enum EntityMoveDirY : uint8_t
 {
 	ENTITY_UP = 0,
-	ENTITY_DOWN = 1
+	ENTITY_DOWN = 1,
+	ENTITY_STATIONARY_Y = 2
 };
+
+typedef std::pair<EntityPropertyName, EntityPropertyValue> EntityProperty;
+typedef std::vector<EntityProperty> EntityProperties;
 
 class Entity
 {
@@ -48,12 +75,14 @@ public:
 	Entity(
 		Game * const game,
 		const std::string & name,
-		const vec2 & spawn
+		const vec2 & spawn,
+		EntityProperties properties
 	);
 	virtual void update(Level & lvl, double t, double dt);
 	virtual void render(Display * const display);
 	virtual void renderAABB(Display * const display);
 	void setCurrentSprite(const std::string & key, double sprAnimTime, int32_t sprAnimFrame);
+	void applyForce(const vec2 & F);
 	std::string getName() const;
 	std::map<std::string, Sprite> getSpriteSheet() const;
 	Sprite & getCurrentSprite();
@@ -69,6 +98,86 @@ public:
 	EntityState getState() const;
 	EntityMoveDirX getMoveDirX() const;
 	EntityMoveDirY getMoveDirY() const;
+	bool hasPropertyWithValue(EntityPropertyName prop_name, EntityPropertyValue prop_value) const;
+
+	static EntityProperties strToProperties(const TmxObjectPropertiesData & tmxProps)
+	{
+		// Initialize entity properties vector
+		EntityProperties props;
+
+		for (auto & tmxProp : tmxProps)
+		{
+			// Initialize entity property object
+			EntityProperty prop;
+
+			// Get name & transform to uppercase
+			std::string prop_name = tmxProp.first;
+			std::transform(prop_name.begin(), prop_name.end(), prop_name.begin(), ::toupper);
+
+			// Convert string name to entity property name
+			switch (cstr2int(prop_name.c_str()))
+			{
+			case cstr2int("TYPE"):
+				prop.first = EPN_TYPE;
+				break;
+			case cstr2int("TARGET"):
+				prop.first = EPN_TARGET;
+				break;
+			case cstr2int("TYPE_CUSTOM"):
+				prop.first = EPN_TYPE_CUSTOM;
+				break;
+			case cstr2int("TARGET_CUSTOM"):
+				prop.first = EPN_TARGET_CUSTOM;
+				break;
+			case cstr2int("COLOR"):
+				prop.first = EPN_COLOR;
+				break;
+			default:
+				LOG_ERROR("Entity: Unknown entity property name: %s! Parsing properties interrupted.", prop_name.c_str());
+				return props;
+			}
+
+			// Get value & transform to uppercase
+			std::string prop_value = tmxProp.second;
+			std::transform(prop_value.begin(), prop_value.end(), prop_value.begin(), ::toupper);
+
+			// Convert string value to entity property value
+			switch (cstr2int(prop_value.c_str()))
+			{
+			case cstr2int("NORMAL"):
+				prop.second = EPV_NORMAL;
+				break;
+			case cstr2int("SOLID"):
+				prop.second = EPV_SOLID;
+				break;
+			case cstr2int("RED"):
+				prop.second = EPV_RED;
+				break;
+			case cstr2int("BLUE"):
+				prop.second = EPV_BLUE;
+				break;
+			case cstr2int("GREEN"):
+				prop.second = EPV_GREEN;
+				break;
+			case cstr2int("YELLOW"):
+				prop.second = EPV_YELLOW;
+				break;
+			case cstr2int("PURPLE"):
+				prop.second = EPV_PURPLE;
+				break;
+			default:
+				LOG_ERROR("Entity: Unknown entity property value: %s! Parsing properties interrupted.", prop_value.c_str());
+				return props;
+			}
+
+			LOG_INFO("Entity: Parsed entity property name: %10s, value: %10s", prop_name.c_str(), prop_value.c_str());
+
+			// Push to entity properties vector
+			props.push_back(prop);
+		}
+
+		return props;
+	}
 protected:
 	Game * const m_game;
 	json m_json;
@@ -86,6 +195,7 @@ protected:
 	EntityState m_state;
 	EntityMoveDirX m_moveDirX;
 	EntityMoveDirY m_moveDirY;
+	EntityProperties m_properties;
 };
 
 #endif // ENTITY_H

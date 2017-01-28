@@ -29,9 +29,9 @@ public:
 
 	void insertData(const vec2 & pos, T data)
 	{
-		const vec2 valPos = pos.round();
-		const int32_t ix = static_cast<int32_t>(std::round(valPos.x / m_cellDivisor));
-		const int32_t iy = static_cast<int32_t>(std::round(valPos.y / m_cellDivisor));
+		const vec2 valPos = pos.floor();
+		const int32_t ix = static_cast<int32_t>(std::floor(valPos.x / m_cellDivisor));
+		const int32_t iy = static_cast<int32_t>(std::floor(valPos.y / m_cellDivisor));
 		const GridKey idx(ix, iy);
 		const GridValue val(valPos, data);
 
@@ -40,9 +40,9 @@ public:
 
 	void deleteData(const vec2 & pos)
 	{
-		const vec2 valPos = pos.round();
-		const int32_t ix = static_cast<int32_t>(std::round(valPos.x / m_cellDivisor));
-		const int32_t iy = static_cast<int32_t>(std::round(valPos.y / m_cellDivisor));
+		const vec2 valPos = pos.floor();
+		const int32_t ix = static_cast<int32_t>(std::floor(valPos.x / m_cellDivisor));
+		const int32_t iy = static_cast<int32_t>(std::floor(valPos.y / m_cellDivisor));
 		const GridKey idx(ix, iy);
 
 		if (m_data.find(idx) != m_data.end())
@@ -55,11 +55,16 @@ public:
 		}
 	}
 
+	void clearData()
+	{
+		m_data.clear();
+	}
+
 	bool getData(const vec2 & pos, std::vector<T> & data)
 	{
-		const vec2 valPos = pos.round();
-		const int32_t ix = static_cast<int32_t>(std::round(valPos.x / m_cellDivisor));
-		const int32_t iy = static_cast<int32_t>(std::round(valPos.y / m_cellDivisor));
+		const vec2 valPos = pos.floor();
+		const int32_t ix = static_cast<int32_t>(std::floor(valPos.x / m_cellDivisor));
+		const int32_t iy = static_cast<int32_t>(std::floor(valPos.y / m_cellDivisor));
 		const GridKey idx(ix, iy);
 		bool data_found = false;
 
@@ -81,9 +86,9 @@ public:
 
 	bool getNearestData(const vec2 & pos, const int32_t range, std::vector<T> & data)
 	{
-		const vec2 valPos = pos.round();
-		const int32_t ix = static_cast<int32_t>(std::round(valPos.x / m_cellDivisor));
-		const int32_t iy = static_cast<int32_t>(std::round(valPos.y / m_cellDivisor));
+		const vec2 valPos = pos.floor();
+		const int32_t ix = static_cast<int32_t>(std::floor(valPos.x / m_cellDivisor));
+		const int32_t iy = static_cast<int32_t>(std::floor(valPos.y / m_cellDivisor));
 		bool data_found = false;
 		std::vector<GridValue> nearestData;
 

@@ -10,6 +10,7 @@
 #include "tmxmap.h"
 #include "entity.h"
 #include "player.h"
+#include "box.h"
 
 Level::Level(
 	Game * const game,
@@ -29,6 +30,7 @@ Level::Level(
 	m_camera(),
 	m_player(nullptr),
 	m_tileGrid(nullptr),
+	m_entityGrid(nullptr),
 	m_entityVector(),
 	m_bgImgVector()
 {
@@ -58,13 +60,16 @@ Level::Level(
 	// Parse level tile grid
 	m_tileGrid = new Grid<Tile *>(json_level["tileGrid"]["cellDivisor"].get<int32_t>());
 
+	// Parse level entity grid
+	m_entityGrid = new Grid<Entity *>(json_level["entityGrid"]["cellDivisor"].get<int32_t>());
+
 	// Parse all tile layers
 	for (auto & l : m_tmxMap->getMapData().layer)
 	{
 		// Parse tiles per layer
 		for (auto & t : l.tiles)
 		{
-			m_tileGrid->insertData(t.getPosition(), &t);
+			m_tileGrid->insertData(t.getAABB().getCenterP(), &t);
 		}
 	}
 
@@ -76,19 +81,30 @@ Level::Level(
 		{
 			for (auto & o : ogd.objects)
 			{
-				LOG_INFO("Level: Parsed entity name: %s, type: %s", o.name.c_str(), o.type.c_str());
+				LOG_INFO("Level: Parsed entity name: %10s, type: %10s", o.name.c_str(), o.type.c_str());
+
+				// Entity position
+				vec2 entity_pos(static_cast<float>(o.x), static_cast<float>(o.y));
+
+				// Entity properties
+				EntityProperties entity_props = Entity::strToProperties(o.objectproperties);
 
 				// Player entity
-				if (o.type == "PLAYER")
+				switch (cstr2int(o.type.c_str()))
 				{
-					m_entityVector.push_back(new Player(m_game, vec2(static_cast<float>(o.x), static_cast<float>(o.y))));
+				case cstr2int("PLAYER"):
+					m_entityVector.push_back(new Player(m_game, entity_pos, entity_props));
+					break;
+				case cstr2int("BOX"):
+					m_entityVector.push_back(new Box(m_game, entity_pos, entity_props));
+					break;
 				}
 			}
 		}
 	}
 
 	// Player is always the first entity
-	m_player = m_entityVector.front();
+	m_player = m_entityVector.back();
 
 	// Build bgimagevector
 	for (TmxImgLayerData &l : m_tmxMap->getMapData().imglayer)
@@ -112,6 +128,13 @@ Level::~Level()
 
 void Level::update(double t, double dt)
 {
+	// Rebuild entity grid
+	m_entityGrid->clearData();
+	for (Entity * e : m_entityVector)
+	{
+		m_entityGrid->insertData(e->getPhysAABB().getCenterP(), e);
+	}
+
 	// Update entities
 	for (Entity * e : m_entityVector)
 	{
@@ -160,9 +183,14 @@ void Level::render(Display * const display)
 	}
 
 	// Render entities
-	for (Entity * e : m_entityVector)
+	std::vector<Entity *> entitiesToRender;
+	if (m_entityGrid->getNearestData(m_camera, 4, entitiesToRender))
 	{
-		e->render(display);
+		for (Entity * e : entitiesToRender)
+		{
+			e->render(display);
+			e->renderAABB(display);
+		}
 	}
 
 	// Render tiles, foreground
@@ -223,6 +251,11 @@ Entity * const Level::getPlayer()
 Grid<Tile *> * Level::getTileGrid()
 {
 	return m_tileGrid;
+}
+
+Grid<Entity *> * Level::getEntityGrid()
+{
+	return m_entityGrid;
 }
 
 std::vector<Entity *> & Level::getEntityVector()

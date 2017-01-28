@@ -1,0 +1,54 @@
+{
+	"entity": {
+		"aabb": {
+			"minX": 3,
+			"minY": 3,
+			"maxX": 13,
+			"maxY": 13
+		},
+		"spriteSheet": "./data/spritesheets/entity_box.png",
+		"currentSprite": "BOX_RED",
+		"sprites": [
+			{
+				"name": "BOX_RED",
+				"animRepeat": false,
+				"animRate": 0,
+				"animFrames": [
+					{ "x": 0, "y": 0, "w": 16, "h": 16 }
+				]
+			},
+			{
+				"name": "BOX_BLUE",
+				"animRepeat": false,
+				"animRate": 0,
+				"animFrames": [
+					{ "x": 1, "y": 0, "w": 16, "h": 16 }
+				]
+			},
+			{
+				"name": "BOX_GREEN",
+				"animRepeat": false,
+				"animRate": 0,
+				"animFrames": [
+					{ "x": 2, "y": 0, "w": 16, "h": 16 }
+				]
+			},
+			{
+				"name": "BOX_YELLOW",
+				"animRepeat": false,
+				"animRate": 0,
+				"animFrames": [
+					{ "x": 3, "y": 0, "w": 16, "h": 16 }
+				]
+			},
+			{
+				"name": "BOX_PURPLE",
+				"animRepeat": false,
+				"animRate": 0,
+				"animFrames": [
+					{ "x": 0, "y": 1, "w": 16, "h": 16 }
+				]
+			}
+		]
+	}
+}

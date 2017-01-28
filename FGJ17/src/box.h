@@ -1,12 +1,12 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef BOX_H
+#define BOX_H
 
 #include "entity.h"
 
-class Player : public Entity
+class Box : public Entity
 {
 public:
-	Player(
+	Box(
 		Game * const game,
 		const vec2 & spawn,
 		EntityProperties properties
@@ -14,4 +14,4 @@ public:
 	virtual void update(Level & lvl, double t, double dt) override;
 };
 
-#endif // PLAYER_H
+#endif // BOX_H

@@ -11,12 +11,14 @@
 // Player class
 Player::Player(
 	Game * const game,
-	const vec2 & spawn
+	const vec2 & spawn,
+	EntityProperties properties
 ) :
 	Entity(
 		game,
 		"player",
-		spawn
+		spawn,
+		properties
 	)
 {
 

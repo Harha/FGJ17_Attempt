@@ -37,6 +37,7 @@ public:
 	vec2 getCamera() const;
 	Entity * const getPlayer();
 	Grid<Tile *> * getTileGrid();
+	Grid<Entity *> * getEntityGrid();
 	std::vector<Entity *> & getEntityVector();
 	std::vector<Image *> & getBgImgVector();
 private:
@@ -53,6 +54,7 @@ private:
 	vec2 m_camera;
 	Entity * m_player;
 	Grid<Tile *> * m_tileGrid;
+	Grid<Entity *> * m_entityGrid;
 	std::vector<Entity *> m_entityVector;
 	std::vector<Image *> m_bgImgVector;
 };

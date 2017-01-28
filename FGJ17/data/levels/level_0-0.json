@@ -2,7 +2,10 @@
 	"level": {
 		"gravity": { "x": 0.0, "y": -9.81 },
 		"tileGrid": {
-			"cellDivisor": 32
+			"cellDivisor": 16
+		},
+		"entityGrid": {
+			"cellDivisor": 16
 		}
 	}
 }

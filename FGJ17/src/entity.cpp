@@ -10,7 +10,8 @@
 Entity::Entity(
 	Game * const game,
 	const std::string & name,
-	const vec2 & spawn
+	const vec2 & spawn,
+	EntityProperties properties
 ) :
 	m_game(game),
 	m_json(),
@@ -26,8 +27,9 @@ Entity::Entity(
 	m_grndFriction(0.25f),
 	m_input{ false, false, false, false, false, false },
 	m_state(ENTITY_FLYING),
-	m_moveDirX(ENTITY_LEFT),
-	m_moveDirY(ENTITY_DOWN)
+	m_moveDirX(ENTITY_STATIONARY_X),
+	m_moveDirY(ENTITY_STATIONARY_Y),
+	m_properties(properties)
 {
 	// Load entity JSON file
 	std::string jsonFilePath("./data/entities/" + m_name + ".json");
@@ -94,6 +96,16 @@ void Entity::update(Level & lvl, double t, double dt)
 	if (!lvl.getAABB().collidesYUp(m_physAABB))
 		m_position = m_spawn;
 
+	// Movement dir X
+	if (m_velocity.x <= EPSILON && m_velocity.x >= -EPSILON)
+		m_moveDirX = ENTITY_STATIONARY_X;
+
+	// Movement dir Y
+	if (m_velocity.y < -EPSILON)
+		m_moveDirY = ENTITY_DOWN;
+	else if (m_velocity.y <= EPSILON && m_velocity.y >= -EPSILON)
+		m_moveDirY = ENTITY_STATIONARY_Y;
+
 	// Update v & s
 	m_velocity -= m_velocity * ((m_state == ENTITY_FLYING) ? m_airFriction : m_grndFriction);
 	m_position = m_position + m_velocity * static_cast<float>(dt);
@@ -103,10 +115,6 @@ void Entity::update(Level & lvl, double t, double dt)
 
 	// Gravity
 	m_velocity += lvl.getGravity();
-
-	// Movement dir -Y
-	if (m_velocity.y <= 0.0)
-		m_moveDirY = ENTITY_DOWN;
 
 	// Jumping
 	if (m_input.keyUp && m_state == ENTITY_GROUNDED)
@@ -129,7 +137,7 @@ void Entity::update(Level & lvl, double t, double dt)
 		m_moveDirX = ENTITY_LEFT;
 	}
 
-	// Collision
+	// Collision against tiles
 	// TODO: Fix entity getting stuck at corners
 	std::vector<Tile *> nearbyTiles;
 	if (lvl.getTileGrid()->getNearestData(m_physAABB.getCenterP(), 1, nearbyTiles))
@@ -152,7 +160,7 @@ void Entity::update(Level & lvl, double t, double dt)
 			{
 				if (aabb_vx.collidesX(t->getAABB()))
 				{
-					m_velocity.x = 0.0f;
+					m_velocity.x -= m_velocity.x;
 				}
 				else if (m_velocity.y != 0.0f)
 				{
@@ -169,7 +177,59 @@ void Entity::update(Level & lvl, double t, double dt)
 						m_state = ENTITY_GROUNDED;
 					}
 
-					m_velocity.y = 0.0f;
+					m_velocity.y -= m_velocity.y;
+				}
+				else
+				{
+					inAir = inAir && true;
+				}
+			}
+
+			m_state = inAir ? ENTITY_FLYING : m_state;
+		}
+	}
+
+	// Collision against entities
+	std::vector<Entity *> nearbyEntities;
+	if (lvl.getEntityGrid()->getNearestData(m_physAABB.getCenterP(), 1, nearbyEntities))
+	{
+		AABB aabb_vx(m_physAABB.getMinP(), m_physAABB.getMaxP());
+		aabb_vx = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), 0.0f);
+		AABB aabb_vy(m_physAABB.getMinP(), m_physAABB.getMaxP());
+		aabb_vy = aabb_vy + vec2(0.0f, m_velocity.y * static_cast<float>(dt));
+		AABB aabb_v(m_physAABB.getMinP(), m_physAABB.getMaxP());
+		aabb_v = aabb_vx + vec2(m_velocity.x * static_cast<float>(dt), m_velocity.y * static_cast<float>(dt));
+
+		for (Entity * e : nearbyEntities)
+		{
+			if (e == this || !e->hasPropertyWithValue(EPN_TYPE, EPV_SOLID))
+				continue;
+
+			bool inAir = false;
+
+			if (m_physAABB.collidesY(e->getPhysAABB()))
+			{
+				if (aabb_vx.collidesX(e->getPhysAABB()))
+				{
+					e->applyForce(vec2(m_velocity.x * 0.5f, 0.0f));
+					m_velocity.x *= 0.5f;
+				}
+				else if (m_velocity.y != 0.0f)
+				{
+					inAir = true;
+				}
+			}
+
+			if (m_physAABB.collidesX(e->getPhysAABB()))
+			{
+				if (aabb_vy.collidesY(e->getPhysAABB()))
+				{
+					if (aabb_vy.collidesYDown(e->getPhysAABB()) && m_velocity.y < 0.0f)
+					{
+						m_state = ENTITY_GROUNDED;
+					}
+
+					m_velocity.y -= m_velocity.y;
 				}
 				else
 				{
@@ -210,6 +270,11 @@ void Entity::setCurrentSprite(const std::string & key, double sprAnimTime, int32
 	{
 		ERR("Entity: Entity::setSprite error! Unknown sprite key (" << key << ").");
 	}
+}
+
+void Entity::applyForce(const vec2 & F)
+{
+	m_velocity += F;
 }
 
 std::string Entity::getName() const
@@ -285,4 +350,20 @@ EntityMoveDirX Entity::getMoveDirX() const
 EntityMoveDirY Entity::getMoveDirY() const
 {
 	return m_moveDirY;
+}
+
+bool Entity::hasPropertyWithValue(EntityPropertyName prop_name, EntityPropertyValue prop_value) const
+{
+	for (auto & prop : m_properties)
+	{
+		if (prop.first == prop_name)
+		{
+			if (prop.second == prop_value)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
