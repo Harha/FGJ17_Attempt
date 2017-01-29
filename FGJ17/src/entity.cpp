@@ -18,6 +18,8 @@ Entity::Entity(
 	m_name(name),
 	m_spriteSheet(),
 	m_currentSprite("NULL"),
+	m_currentTileCollisions(),
+	m_currentEntityCollisions(),
 	m_initAABB(),
 	m_physAABB(),
 	m_spawn(spawn),
@@ -137,6 +139,10 @@ void Entity::update(Level & lvl, double t, double dt)
 		m_moveDirX = ENTITY_LEFT;
 	}
 
+	// Clear current collision vectors
+	m_currentTileCollisions.clear();
+	m_currentEntityCollisions.clear();
+
 	// Collision against tiles
 	// TODO: Fix entity getting stuck at corners
 	std::vector<Tile *> nearbyTiles;
@@ -151,7 +157,12 @@ void Entity::update(Level & lvl, double t, double dt)
 
 		for (Tile * t : nearbyTiles)
 		{
-			if (!t->hasPropertyWithValue(TPN_TYPE, TPV_SOLID))
+			// Update current tile collisions vector against this entity
+			if (m_physAABB.collides(t->getAABB()))
+				m_currentTileCollisions.push_back(t);
+
+			// Physics collisions below
+			if (!t->hasPropertyWithValue(TPN_TYPE, TilePropertyValue(TPV_STRING, "SOLID", NULL)))
 				continue;
 
 			bool inAir = false;
@@ -202,7 +213,16 @@ void Entity::update(Level & lvl, double t, double dt)
 
 		for (Entity * e : nearbyEntities)
 		{
-			if (e == this || !e->hasPropertyWithValue(EPN_TYPE, EPV_SOLID))
+			// Skip instance of self
+			if (e == this)
+				continue;
+
+			// Update current entity collisions vector against this entity
+			if (m_physAABB.collides(e->getPhysAABB()))
+				m_currentEntityCollisions.push_back(e);
+
+			// Physics collisions below
+			if (!e->hasPropertyWithValue(EPN_TYPE, EntityPropertyValue(EPV_STRING, "SOLID", NULL)))
 				continue;
 
 			bool inAir = false;
@@ -297,6 +317,16 @@ std::string Entity::getCurrentSpriteKey() const
 	return m_currentSprite;
 }
 
+std::vector<Tile *> Entity::getCurrentTileCollisions() const
+{
+	return m_currentTileCollisions;
+}
+
+std::vector<Entity *> Entity::getCurrentEntityCollisions() const
+{
+	return m_currentEntityCollisions;
+}
+
 AABB Entity::getInitAABB() const
 {
 	return m_initAABB;
@@ -358,9 +388,16 @@ bool Entity::hasPropertyWithValue(EntityPropertyName prop_name, EntityPropertyVa
 	{
 		if (prop.first == prop_name)
 		{
-			if (prop.second == prop_value)
+			switch (prop.second.type)
 			{
-				return true;
+			case EPV_STRING:
+				if (prop.second.value_str == prop_value.value_str)
+					return true;
+				break;
+			case EPV_NUMBER:
+				if (prop.second.value_num == prop_value.value_num)
+					return true;
+				break;
 			}
 		}
 	}

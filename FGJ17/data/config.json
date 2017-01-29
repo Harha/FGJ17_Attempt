@@ -10,7 +10,7 @@
 		"physics": {
 			"timeStep": 1e-2,
 			"tickRate": 80.0,
-			"physicsDistance": 2
+			"physicsDistance": 1
 		},
 		"graphics": {
 			"frameRate": 128.0,

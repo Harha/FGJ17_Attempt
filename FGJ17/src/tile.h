@@ -22,23 +22,37 @@ enum TileLayer : uint8_t
 enum TilePropertyName : uint8_t
 {
 	TPN_TYPE = 0,
-	TPN_TARGET = 1,
-	TPN_TYPE_CUSTOM = 2,
-	TPN_TARGET_CUSTOM = 3,
-	TPN_GATE = 4
+	TPN_ID = 1,
+	TPN_TARGET = 2,
+	TPN_TYPE_CUSTOM = 3,
+	TPN_ID_CUSTOM = 4,
+	TPN_TARGET_CUSTOM = 5
 };
 
-enum TilePropertyValue : uint8_t
+enum TilePropertyValue_t : uint8_t
 {
-	TPV_NORMAL = 0,
-	TPV_SOLID = 1,
-	TPV_COMPUTER = 2,
-	TPV_BUTTON = 3,
-	TPV_RED = 4,
-	TPV_BLUE = 5,
-	TPV_GREEN = 6,
-	TPV_YELLOW = 7,
-	TPV_PURPLE = 8
+	TPV_NULL = 0,
+	TPV_STRING = 1,
+	TPV_NUMBER = 2
+};
+
+struct TilePropertyValue
+{
+	TilePropertyValue_t type;
+	std::string value_str;
+	int32_t value_num;
+
+	TilePropertyValue(
+		TilePropertyValue_t type = TPV_NULL,
+		std::string value_str = "NULL",
+		int32_t value_num = NULL
+	) :
+		type(type),
+		value_str(value_str),
+		value_num(value_num)
+	{
+
+	}
 };
 
 typedef std::pair<TilePropertyName, TilePropertyValue> TileProperty;
@@ -105,63 +119,66 @@ public:
 			case cstr2int("TYPE"):
 				prop.first = TPN_TYPE;
 				break;
+			case cstr2int("ID"):
+				prop.first = TPN_ID;
+				break;
 			case cstr2int("TARGET"):
 				prop.first = TPN_TARGET;
 				break;
 			case cstr2int("TYPE_CUSTOM"):
 				prop.first = TPN_TYPE_CUSTOM;
 				break;
+			case cstr2int("ID_CUSTOM"):
+				prop.first = TPN_ID_CUSTOM;
+				break;
 			case cstr2int("TARGET_CUSTOM"):
 				prop.first = TPN_TARGET_CUSTOM;
-				break;
-			case cstr2int("GATE"):
-				prop.first = TPN_GATE;
 				break;
 			default:
 				LOG_ERROR("Tile: Unknown tile property name: %s! Parsing properties interrupted.", prop_name.c_str());
 				return props;
 			}
 
-			// Get value & transform to uppercase
-			std::string prop_value = tmxProp.second;
-			std::transform(prop_value.begin(), prop_value.end(), prop_value.begin(), ::toupper);
-
-			// Convert string value to tile property value
-			switch (cstr2int(prop_value.c_str()))
+			// Convert string value to tile property value properly
+			if (prop.first == TPN_ID || prop.first == TPN_TARGET)
 			{
-			case cstr2int("NORMAL"):
-				prop.second = TPV_NORMAL;
-				break;
-			case cstr2int("SOLID"):
-				prop.second = TPV_SOLID;
-				break;
-			case cstr2int("COMPUTER"):
-				prop.second = TPV_COMPUTER;
-				break;
-			case cstr2int("BUTTON"):
-				prop.second = TPV_BUTTON;
-				break;
-			case cstr2int("RED"):
-				prop.second = TPV_RED;
-				break;
-			case cstr2int("BLUE"):
-				prop.second = TPV_BLUE;
-				break;
-			case cstr2int("GREEN"):
-				prop.second = TPV_GREEN;
-				break;
-			case cstr2int("YELLOW"):
-				prop.second = TPV_YELLOW;
-				break;
-			case cstr2int("PURPLE"):
-				prop.second = TPV_PURPLE;
-				break;
-			default:
-				LOG_ERROR("Tile: Unknown tile property value: %s! Parsing properties interrupted.", prop_value.c_str());
-				return props;
+				// Get value as integer
+				int32_t prop_value = std::stoi(tmxProp.second);
+				prop.second = TilePropertyValue(TPV_NUMBER, "NULL", prop_value);
+			}
+			else
+			{
+				// Get value & transform to uppercase
+				std::string prop_value = tmxProp.second;
+				std::transform(prop_value.begin(), prop_value.end(), prop_value.begin(), ::toupper);
+
+				switch (cstr2int(prop_value.c_str()))
+				{
+				case cstr2int("NORMAL"):
+					prop.second = TilePropertyValue(TPV_STRING, "NORMAL", NULL);
+					break;
+				case cstr2int("SOLID"):
+					prop.second = TilePropertyValue(TPV_STRING, "SOLID", NULL);
+					break;
+				case cstr2int("TRIGGER"):
+					prop.second = TilePropertyValue(TPV_STRING, "TRIGGER", NULL);
+					break;
+				case cstr2int("BUTTON"):
+					prop.second = TilePropertyValue(TPV_STRING, "BUTTON", NULL);
+					break;
+				case cstr2int("GATE"):
+					prop.second = TilePropertyValue(TPV_STRING, "GATE", NULL);
+					break;
+				case cstr2int("COMPUTER"):
+					prop.second = TilePropertyValue(TPV_STRING, "COMPUTER", NULL);
+					break;
+				default:
+					LOG_ERROR("Tile: Unknown tile property value: %s! Parsing properties interrupted.", prop_value.c_str());
+					return props;
+				}
 			}
 
-			LOG_INFO("Tile: Parsed tile property name: %10s, value: %10s", prop_name.c_str(), prop_value.c_str());
+			LOG_INFO("Tile: Parsed tile property name: %10s, value type: %1d, value str: %10s, value num: %4d", prop_name.c_str(), prop.second.type, prop.second.value_str.c_str(), prop.second.value_num);
 
 			// Push to tile properties vector
 			props.push_back(prop);

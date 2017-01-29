@@ -12,6 +12,8 @@ public:
 		EntityProperties properties
 	);
 	virtual void update(Level & lvl, double t, double dt) override;
+private:
+	bool m_triggered;
 };
 
 #endif // BOX_H

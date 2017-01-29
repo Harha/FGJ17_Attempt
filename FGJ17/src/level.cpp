@@ -128,6 +128,8 @@ Level::~Level()
 
 void Level::update(double t, double dt)
 {
+	//m_entityVector.push_back(new Box(m_game, m_player->getPosition(), EntityProperties()));
+
 	// Rebuild entity grid
 	m_entityGrid->clearData();
 	for (Entity * e : m_entityVector)
@@ -154,16 +156,6 @@ void Level::render(Display * const display)
 	);
 	display->setOffset(offset);
 
-	// Render background images
-	/*for (Image * i : m_bgImgVector)
-	{
-		vec2 offset_parallax(offset.x * 0.5f, offset.y * 0.5f);
-
-		display->setOffset(offset_parallax);
-		i->renderRepeat(display, vec2(0, 0), m_width, m_height);
-		display->setOffset(offset);
-	}*/
-
 	// Render tiles, background pass
 	std::vector<Tile *> tilesToRenderBg;
 	std::vector<Tile *> tilesToRenderFg;
@@ -189,7 +181,6 @@ void Level::render(Display * const display)
 		for (Entity * e : entitiesToRender)
 		{
 			e->render(display);
-			e->renderAABB(display);
 		}
 	}
 
@@ -198,11 +189,6 @@ void Level::render(Display * const display)
 	{
 		t->render(display);
 	}
-
-	// Render level AABB
-	/*SDL_SetRenderDrawColor(display->getRenderer(), 255, 255, 255, 255);
-	m_aabb.render(display);
-	SDL_SetRenderDrawColor(display->getRenderer(), 0, 0, 0, 0);*/
 
 	// Reset display offset
 	display->setOffset(vec2(0, 0));

@@ -15,6 +15,7 @@ using json = nlohmann::json;
 class Game;
 class Display;
 class Level;
+class Tile;
 
 struct EntityInput
 {
@@ -29,21 +30,37 @@ struct EntityInput
 enum EntityPropertyName : uint8_t
 {
 	EPN_TYPE = 0,
-	EPN_TARGET = 1,
-	EPN_TYPE_CUSTOM = 2,
-	EPN_TARGET_CUSTOM = 3,
-	EPN_COLOR = 4
+	EPN_ID = 1,
+	EPN_TARGET = 2,
+	EPN_TYPE_CUSTOM = 3,
+	EPN_ID_CUSTOM = 4,
+	EPN_TARGET_CUSTOM = 5
 };
 
-enum EntityPropertyValue : uint8_t
+enum EntityPropertyValue_t : uint8_t
 {
-	EPV_NORMAL = 0,
-	EPV_SOLID = 1,
-	EPV_RED = 2,
-	EPV_BLUE = 3,
-	EPV_GREEN = 4,
-	EPV_YELLOW = 5,
-	EPV_PURPLE = 6
+	EPV_NULL = 0,
+	EPV_STRING = 1,
+	EPV_NUMBER = 2
+};
+
+struct EntityPropertyValue
+{
+	EntityPropertyValue_t type;
+	std::string value_str;
+	int32_t value_num;
+
+	EntityPropertyValue(
+		EntityPropertyValue_t type = EPV_NULL,
+		std::string value_str = "NULL",
+		int32_t value_num = NULL
+	) :
+		type(type),
+		value_str(value_str),
+		value_num(value_num)
+	{
+
+	}
 };
 
 enum EntityState : uint8_t
@@ -87,6 +104,8 @@ public:
 	std::map<std::string, Sprite> getSpriteSheet() const;
 	Sprite & getCurrentSprite();
 	std::string getCurrentSpriteKey() const;
+	std::vector<Tile *> getCurrentTileCollisions() const;
+	std::vector<Entity *> getCurrentEntityCollisions() const;
 	AABB getInitAABB() const;
 	AABB getPhysAABB() const;
 	vec2 getSpawn() const;
@@ -120,57 +139,66 @@ public:
 			case cstr2int("TYPE"):
 				prop.first = EPN_TYPE;
 				break;
+			case cstr2int("ID"):
+				prop.first = EPN_ID;
+				break;
 			case cstr2int("TARGET"):
 				prop.first = EPN_TARGET;
 				break;
 			case cstr2int("TYPE_CUSTOM"):
 				prop.first = EPN_TYPE_CUSTOM;
 				break;
+			case cstr2int("ID_CUSTOM"):
+				prop.first = EPN_ID_CUSTOM;
+				break;
 			case cstr2int("TARGET_CUSTOM"):
 				prop.first = EPN_TARGET_CUSTOM;
-				break;
-			case cstr2int("COLOR"):
-				prop.first = EPN_COLOR;
 				break;
 			default:
 				LOG_ERROR("Entity: Unknown entity property name: %s! Parsing properties interrupted.", prop_name.c_str());
 				return props;
 			}
 
-			// Get value & transform to uppercase
-			std::string prop_value = tmxProp.second;
-			std::transform(prop_value.begin(), prop_value.end(), prop_value.begin(), ::toupper);
-
-			// Convert string value to entity property value
-			switch (cstr2int(prop_value.c_str()))
+			// Convert string value to entity property value properly
+			if (prop.first == EPN_ID || prop.first == EPN_TARGET)
 			{
-			case cstr2int("NORMAL"):
-				prop.second = EPV_NORMAL;
-				break;
-			case cstr2int("SOLID"):
-				prop.second = EPV_SOLID;
-				break;
-			case cstr2int("RED"):
-				prop.second = EPV_RED;
-				break;
-			case cstr2int("BLUE"):
-				prop.second = EPV_BLUE;
-				break;
-			case cstr2int("GREEN"):
-				prop.second = EPV_GREEN;
-				break;
-			case cstr2int("YELLOW"):
-				prop.second = EPV_YELLOW;
-				break;
-			case cstr2int("PURPLE"):
-				prop.second = EPV_PURPLE;
-				break;
-			default:
-				LOG_ERROR("Entity: Unknown entity property value: %s! Parsing properties interrupted.", prop_value.c_str());
-				return props;
+				// Get value as integer
+				int32_t prop_value = std::stoi(tmxProp.second);
+				prop.second = EntityPropertyValue(EPV_NUMBER, "NULL", prop_value);
+			}
+			else
+			{
+				// Get value & transform to uppercase
+				std::string prop_value = tmxProp.second;
+				std::transform(prop_value.begin(), prop_value.end(), prop_value.begin(), ::toupper);
+
+				switch (cstr2int(prop_value.c_str()))
+				{
+				case cstr2int("NORMAL"):
+					prop.second = EntityPropertyValue(EPV_STRING, "NORMAL", NULL);
+					break;
+				case cstr2int("SOLID"):
+					prop.second = EntityPropertyValue(EPV_STRING, "SOLID", NULL);
+					break;
+				case cstr2int("TRIGGER"):
+					prop.second = EntityPropertyValue(EPV_STRING, "TRIGGER", NULL);
+					break;
+				case cstr2int("BUTTON"):
+					prop.second = EntityPropertyValue(EPV_STRING, "BUTTON", NULL);
+					break;
+				case cstr2int("GATE"):
+					prop.second = EntityPropertyValue(EPV_STRING, "GATE", NULL);
+					break;
+				case cstr2int("COMPUTER"):
+					prop.second = EntityPropertyValue(EPV_STRING, "COMPUTER", NULL);
+					break;
+				default:
+					LOG_ERROR("Entity: Unknown entity property value: %s! Parsing properties interrupted.", prop_value.c_str());
+					return props;
+				}
 			}
 
-			LOG_INFO("Entity: Parsed entity property name: %10s, value: %10s", prop_name.c_str(), prop_value.c_str());
+			LOG_INFO("Entity: Parsed entity property name: %10s, value type: %1d, value str: %10s, value num: %4d", prop_name.c_str(), prop.second.type, prop.second.value_str.c_str(), prop.second.value_num);
 
 			// Push to entity properties vector
 			props.push_back(prop);
@@ -184,6 +212,8 @@ protected:
 	std::string m_name;
 	std::map<std::string, Sprite> m_spriteSheet;
 	std::string m_currentSprite;
+	std::vector<Tile *> m_currentTileCollisions;
+	std::vector<Entity *> m_currentEntityCollisions;
 	AABB m_initAABB;
 	AABB m_physAABB;
 	vec2 m_spawn;

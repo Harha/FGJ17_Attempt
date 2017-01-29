@@ -69,9 +69,16 @@ bool Tile::hasPropertyWithValue(TilePropertyName prop_name, TilePropertyValue pr
 	{
 		if (prop.first == prop_name)
 		{
-			if (prop.second == prop_value)
+			switch (prop.second.type)
 			{
-				return true;
+			case TPV_STRING:
+				if (prop.second.value_str == prop_value.value_str)
+					return true;
+				break;
+			case TPV_NUMBER:
+				if (prop.second.value_num == prop_value.value_num)
+					return true;
+				break;
 			}
 		}
 	}

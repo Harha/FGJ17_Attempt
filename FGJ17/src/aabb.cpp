@@ -47,7 +47,7 @@ bool AABB::collidesY(const AABB & other) const
 
 bool AABB::collides(const AABB & other) const
 {
-	return (collidesX(other) && collidesY(other));
+	return (collidesX(other) || collidesY(other));
 }
 
 void AABB::setMinP(const vec2 & minP)
